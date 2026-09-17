@@ -1,0 +1,132 @@
+# EasyBusy Connect (by Marclie)
+
+WordPress plugin that puts a multi-step appointment booking form on a clinic
+website and syncs the result to [EasyBusy](https://easybusy.software) over its
+B2B REST API — real services, real specialists, real free slots, with a lead
+fallback when booking is not available.
+
+Built by **Marclie**. Not affiliated with or endorsed by EasyBusy; it talks to
+the EasyBusy B2B API using the clinic's own key.
+
+- **Requires:** WordPress 6.0+, PHP 8.0+
+- **License:** GPL-2.0-or-later
+- **Text domain:** `easybusy-connect` (Croatian translation included)
+
+## What it does
+
+**Front end** — `[easybusy_booking]`, or the *EasyBusy Booking* element in
+Bricks. Three steps:
+
+1. **Service** (prices come straight from the clinic) and, revealed inline, the
+   **specialist** — or "no preference".
+2. **Month calendar** + the times of the chosen day. Free days are outlined,
+   the rest are disabled; times are grouped per specialist.
+3. **Your details** — message, optional file upload (ortopan/X-ray), contact,
+   consent.
+
+Every step opens on a sensible default (first service, no preference, earliest
+free day and time), so the summary is populated from the start. On submit the
+visitor is redirected to a thank-you page (`[easybusy_thank_you]`) and a
+`dataLayer` event is pushed, which is what Google Ads / GA4 measure. Failures
+render an alert with the reason and never clear the visitor's input.
+
+The calendar is drawn client-side: EasyBusy exposes only a flat
+`available-slots` list, so the whole horizon is fetched once and month
+navigation costs no further API calls.
+
+**Admin** — top-level **EasyBusy** menu:
+
+- **Entries** — every submission, including failed sends, with stat tiles
+  (total, 7/30 days, deduplicated people, returning visitors, failed), status
+  and type filters, search, CSV export, expandable technical detail per row.
+- **Settings** — tabbed: *Connection* (capability probe, API key, dry run),
+  *Booking form*, *Email* (editable templates + 12 placeholders), *Privacy &
+  data*, *Advanced* (cache TTLs, paged API log).
+- Dashboard widget with the connection state and the last five requests.
+- WP-CLI: `wp easybusy check|slots|entries|purge-cache|purge-entries`.
+
+## Install
+
+1. Copy the plugin folder to `wp-content/plugins/easybusy-connect` (or upload
+   the release zip), then activate it.
+2. Put the API key in `wp-config.php`:
+
+   ```php
+   define('EASYBUSY_API_KEY', 'your-key-from-easybusy');
+   ```
+
+   A key can also be pasted in **Settings → Connection → API key**, but a
+   constant defined in code always wins over the stored one.
+3. Open **EasyBusy → Settings**. The plugin probes the live API and shows which
+   endpoint groups the key grants; every feature is gated on that probe, so a
+   widened key needs no code change — just re-probe.
+4. Create a page with `[easybusy_booking]` and another with
+   `[easybusy_thank_you]`, then select the second one in
+   **Settings → Booking form → Thank-you page**.
+5. Leave **Dry run** on until you are ready: submissions are validated,
+   recorded and logged, but nothing is written to EasyBusy and no e-mail is
+   sent.
+
+### Caching
+
+Exclude the booking page, the thank-you page and `/wp-json/easybusy/v1/` from
+any page/HTML cache. A cached `slotId` is a dead booking.
+
+### E-mail
+
+Notifications go out through `wp_mail()`. On hosts where PHP `mail()` is
+throttled or disabled this fails silently — the plugin captures the reason,
+logs it and shows it in **Settings → Email**. Use an SMTP plugin in production.
+
+## Privacy
+
+Submissions are health-adjacent data, so **Settings → Privacy & data** sets how
+much of the person an entry keeps, and the masking happens *when the row is
+written* — the database never holds what the level excludes:
+
+| Level | Kept | Never written |
+| --- | --- | --- |
+| `minimal` (default) | initials (`A. H.`), e-mail provider (`@gmail.com`), masked phone (`+385 ••• 33`), message length, salted one-way contact hash | name, e-mail address, phone number, message text |
+| `full` | the clinic's working copy: name, e-mail, phone, message | — |
+| `none` | the request only | anything about the person |
+
+OIB is never stored in any level. The contact hash
+(`hash_hmac('sha256', …, wp_salt())`) is not reversible and is site-specific;
+it exists so the list can count distinct people and flag a returning visitor
+without identifying anyone. Rows are deleted after `retention_days` by a daily
+cron, and the CSV export contains exactly the stored columns — nothing is
+re-derived.
+
+## Architecture
+
+```
+easybusy-connect.php     bootstrap, autoloader, constants
+src/Plugin.php           container + hook wiring
+src/Api/                 Client (retries, logging), Capabilities probe,
+                         Catalog, Slots, Booking, Leads
+src/Form/                Definition (fields, validation), Draft (server-side
+                         state), Submit (booking → lead fallback)
+src/Rest/Controller.php  /wp-json/easybusy/v1/* proxy — the API key never
+                         reaches the browser; rate limited, no-store
+src/Store/Submissions.php  entries table, masking, stats, export
+src/Admin/               Menu, SettingsPage, EntriesPage, Shell (UI kit)
+src/Frontend/            Shortcode, Bricks element, assets, thank-you page
+src/Integrations/        Fluent Forms → EasyBusy leads
+src/Support/             Log, RateLimit, Tz, Uploads
+src/Cli/Commands.php     WP-CLI
+assets/                  form.css/js (front end), admin.css/js
+languages/               Croatian translation
+```
+
+Design rules worth keeping:
+
+- **Capability-driven.** Nothing assumes an endpoint exists; `Capabilities`
+  probes and features gate on the result.
+- **Nothing secret in the browser.** The front end only ever talks to the
+  plugin's own REST namespace.
+- **Front-end sizes in px.** Themes that set `html { font-size: 10px }` would
+  otherwise shrink the form to ~60 %.
+- **Admin UI is the plugin's own**, scoped under `.ebc-admin`; every table
+  pages at 20 rows through `Shell::pagination()`.
+- **Bump the version on any asset change** — `?ver=` is the only thing a host
+  cache keys on.

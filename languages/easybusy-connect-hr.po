@@ -1,0 +1,308 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: EasyBusy Connect 0.5.0\n"
+"Language: hr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+# Step titles
+msgid "Choose a service"
+msgstr "Odaberite uslugu"
+
+msgid "Choose a date and time"
+msgstr "Odaberite datum i vrijeme"
+
+msgid "Book an appointment online"
+msgstr "Rezervirajte termin online"
+
+msgid "Three short steps, about a minute. You are sending a request — the clinic confirms the exact time with you by phone or e-mail."
+msgstr "Tri kratka koraka, otprilike minuta. Šaljete zahtjev — klinika s vama potvrđuje točno vrijeme telefonom ili e-mailom."
+
+msgid "Pick what you need; prices come straight from the clinic."
+msgstr "Odaberite što vam je potrebno; cijene dolaze izravno iz klinike."
+
+msgid "Only genuinely free slots are shown."
+msgstr "Prikazani su samo stvarno slobodni termini."
+
+msgid "Tell us briefly what troubles you and how to reach you."
+msgstr "Ukratko nam recite što vas muči i kako vas kontaktirati."
+
+msgid "Previous month"
+msgstr "Prethodni mjesec"
+
+msgid "Next month"
+msgstr "Sljedeći mjesec"
+
+msgid "Free appointments"
+msgstr "Slobodni termini"
+
+msgid "Selected day"
+msgstr "Odabrani dan"
+
+msgid "%d free times"
+msgstr "%d slobodnih vremena"
+
+msgid "The request was not sent"
+msgstr "Zahtjev nije poslan"
+
+msgid "Please try again, or call the clinic if the problem persists."
+msgstr "Pokušajte ponovno ili nas pozovite telefonom ako se problem nastavi."
+
+msgid "Thank you — your request has been received"
+msgstr "Hvala — vaš zahtjev je zaprimljen"
+
+msgid "Please keep the reference number for any questions."
+msgstr "Sačuvajte referentni broj za sva daljnja pitanja."
+
+msgid "The details of this request are no longer available in your browser session. The clinic has them and will be in touch."
+msgstr "Detalji ovog zahtjeva više nisu dostupni u vašoj sesiji. Klinika ih ima i kontaktirat će vas."
+
+msgid "Back to the homepage"
+msgstr "Natrag na naslovnicu"
+
+msgid "Your message"
+msgstr "Vaša poruka"
+
+msgid "will be assigned by the clinic"
+msgstr "dodijelit će ga klinika"
+
+msgid "Choose a specialist"
+msgstr "Odaberite specijalista"
+
+msgid "Describe your issue"
+msgstr "Opišite svoj problem"
+
+msgid "Pick a date and time"
+msgstr "Odaberite datum i vrijeme"
+
+msgid "Your details"
+msgstr "Vaši podaci"
+
+msgid "Confirmation"
+msgstr "Potvrda"
+
+# Navigation and states
+msgid "Loading…"
+msgstr "Učitavanje…"
+
+msgid "Continue"
+msgstr "Nastavi"
+
+msgid "Back"
+msgstr "Natrag"
+
+msgid "Send request"
+msgstr "Pošalji zahtjev"
+
+msgid "Sending…"
+msgstr "Šaljem…"
+
+msgid "Uploading…"
+msgstr "Učitavam datoteku…"
+
+msgid "Start over"
+msgstr "Počni ispočetka"
+
+msgid "Step %1$d of %2$d"
+msgstr "Korak %1$d od %2$d"
+
+# Selection
+msgid "Service"
+msgstr "Usluga"
+
+msgid "Specialist"
+msgstr "Specijalist"
+
+msgid "No preference"
+msgstr "Bez posebne želje"
+
+msgid "Other services"
+msgstr "Ostale usluge"
+
+msgid "Choose a day"
+msgstr "Odaberite dan"
+
+msgid "Choose a time"
+msgstr "Odaberite vrijeme"
+
+msgid "Appointment"
+msgstr "Termin"
+
+msgid "Your selection"
+msgstr "Vaš odabir"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "No free appointments in the selected period. Leave your details and the clinic will contact you."
+msgstr "Nema slobodnih termina u odabranom razdoblju. Ostavite svoje podatke i klinika će vas kontaktirati."
+
+# Message step
+msgid "What would you like to tell the clinic?"
+msgstr "Što želite reći klinici?"
+
+msgid "Briefly describe your issue or the reason for the appointment."
+msgstr "Kratko opišite svoj problem ili razlog dolaska na termin."
+
+msgid "Preferred time (optional)"
+msgstr "Željeno vrijeme (neobavezno)"
+
+msgid "Attach an X-ray or document (max %1$d files, %2$d MB each)"
+msgstr "Priložite ortopan ili dokument (najviše %1$d datoteke, %2$d MB svaka)"
+
+# Contact fields
+msgid "First name"
+msgstr "Ime"
+
+msgid "Last name"
+msgstr "Prezime"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "Phone (with country code)"
+msgstr "Telefon (s međunarodnim prefiksom)"
+
+msgid "OIB (personal identification number)"
+msgstr "OIB (osobni identifikacijski broj)"
+
+msgid "Country code"
+msgstr "Oznaka države"
+
+msgid "Street"
+msgstr "Ulica"
+
+msgid "Number"
+msgstr "Broj"
+
+msgid "Postal code"
+msgstr "Poštanski broj"
+
+msgid "City"
+msgstr "Grad"
+
+msgid "optional"
+msgstr "neobavezno"
+
+msgid "I agree to the processing of my personal data for the purpose of this appointment request."
+msgstr "Pristajem na obradu svojih osobnih podataka u svrhu ovog zahtjeva za termin."
+
+msgid "Privacy policy"
+msgstr "Politika privatnosti"
+
+# Confirmation
+msgid "Request received"
+msgstr "Zahtjev je zaprimljen"
+
+msgid "This is a request, not a confirmed appointment. The clinic will contact you to confirm."
+msgstr "Ovo je zahtjev, a ne potvrđeni termin. Klinika će vas kontaktirati radi potvrde."
+
+msgid "Reference number"
+msgstr "Referentni broj"
+
+msgid "Test mode: the request was assembled and validated, but nothing was sent to EasyBusy."
+msgstr "Testni način rada: zahtjev je sastavljen i provjeren, ali ništa nije poslano u EasyBusy."
+
+# Validation and errors
+msgid "Please enter your first name."
+msgstr "Unesite svoje ime."
+
+msgid "Please enter your last name."
+msgstr "Unesite svoje prezime."
+
+msgid "Please enter a valid e-mail address."
+msgstr "Unesite ispravnu e-mail adresu."
+
+msgid "Please enter a phone number including the country code."
+msgstr "Unesite broj telefona s međunarodnim prefiksom."
+
+msgid "Please confirm you agree to the processing of your data."
+msgstr "Potvrdite da pristajete na obradu svojih podataka."
+
+msgid "Please enter your personal identification number (OIB)."
+msgstr "Unesite svoj OIB."
+
+msgid "Please select the country that issued your OIB."
+msgstr "Odaberite državu koja je izdala vaš OIB."
+
+msgid "Please correct the highlighted fields."
+msgstr "Ispravite označena polja."
+
+msgid "That appointment time has just been taken. Please pick another one."
+msgstr "Taj je termin upravo zauzet. Odaberite drugi."
+
+msgid "That start time is not available."
+msgstr "To vrijeme početka nije dostupno."
+
+msgid "That service is not bookable."
+msgstr "Ta usluga nije dostupna za rezervaciju."
+
+msgid "That specialist does not perform the selected service."
+msgstr "Taj specijalist ne izvodi odabranu uslugu."
+
+msgid "Please choose a service first."
+msgstr "Najprije odaberite uslugu."
+
+msgid "Please pick an appointment time."
+msgstr "Odaberite vrijeme termina."
+
+msgid "Your session expired. Please start again."
+msgstr "Vaša je sesija istekla. Započnite ponovno."
+
+msgid "Too many requests. Please try again in a few minutes."
+msgstr "Previše zahtjeva. Pokušajte ponovno za nekoliko minuta."
+
+msgid "Please take a moment to review your details."
+msgstr "Provjerite još jednom svoje podatke."
+
+msgid "Submission rejected."
+msgstr "Zahtjev je odbijen."
+
+msgid "Something went wrong. Please try again."
+msgstr "Došlo je do pogreške. Pokušajte ponovno."
+
+msgid "Online requests are temporarily unavailable. Please call the clinic."
+msgstr "Online zahtjevi trenutačno nisu dostupni. Molimo pozovite kliniku."
+
+msgid "JavaScript is required to book online. Please call the clinic or use the contact form."
+msgstr "Za online rezervaciju potreban je JavaScript. Molimo pozovite kliniku ili koristite kontakt obrazac."
+
+# Uploads
+msgid "Only JPG, PNG and PDF files are accepted."
+msgstr "Prihvaćaju se samo JPG, PNG i PDF datoteke."
+
+msgid "Each file must be smaller than %d MB."
+msgstr "Svaka datoteka mora biti manja od %d MB."
+
+msgid "You can attach at most %d files."
+msgstr "Možete priložiti najviše %d datoteke."
+
+msgid "The file could not be uploaded."
+msgstr "Datoteku nije bilo moguće prenijeti."
+
+msgid "The file could not be stored."
+msgstr "Datoteku nije bilo moguće pohraniti."
+
+msgid "No file was received."
+msgstr "Datoteka nije zaprimljena."
+
+msgid "Attachments are not accepted."
+msgstr "Prilozi se ne prihvaćaju."
+
+# Patient e-mail
+msgid "Hello %s,"
+msgstr "Poštovani/a %s,"
+
+msgid "We have received your appointment request. This is not a confirmed appointment yet — our team will contact you to confirm it."
+msgstr "Zaprimili smo vaš zahtjev za termin. Ovo još nije potvrđeni termin — naš tim kontaktirat će vas radi potvrde."
+
+msgid "%s — we received your request"
+msgstr "%s — zaprimili smo vaš zahtjev"
+
+msgid "Requested time: %s"
+msgstr "Traženo vrijeme: %s"
+
+msgid "Service: %s"
+msgstr "Usluga: %s"

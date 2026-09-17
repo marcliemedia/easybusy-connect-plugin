@@ -1,0 +1,1020 @@
+/*
+ * EasyBusy Connect — booking form.
+ *
+ * Brand: black + gold, taken from Core Framework tokens (--primary, --all-dark,
+ * --text-*, --bg-surface) with hard fallbacks so the form still looks right if
+ * the framework is ever disabled. Spacing and radii reuse the theme's own
+ * --space-* / --radius-* scale so the form breathes like the rest of the site.
+ *
+ * Accessibility brief (healthcare): 16 px minimum text, 48 px touch targets,
+ * 3 px focus rings, >=4.5:1 contrast, no motion-heavy effects.
+ *
+ * Sizes are in px on purpose: this theme sets html{font-size:10px}, so rem
+ * would render the whole form at ~62 % (see common-issues #66).
+ */
+.ebc-form {
+	--ebc-gold: var(--primary, #d4b368);
+	--ebc-gold-strong: var(--primary-d-1, #b8944a);
+	--ebc-gold-soft: var(--primary-10, rgba(212, 179, 104, 0.12));
+	--ebc-dark: var(--all-dark, #2b2420);
+	--ebc-dark-soft: var(--all-dark-5, rgba(43, 36, 32, 0.05));
+	--ebc-text: var(--text-title, #1c1917);
+	--ebc-text-muted: var(--text-body, #4b4b4b);
+	--ebc-surface: var(--light, #ffffff);
+	--ebc-surface-muted: var(--bg-surface, #f5f5f5);
+	--ebc-border: var(--all-dark-20, rgba(43, 36, 32, 0.2));
+	--ebc-border-strong: var(--all-dark-40, rgba(43, 36, 32, 0.45));
+	--ebc-error: #b42318;
+
+	--ebc-radius: var(--radius-s, 8px);
+	--ebc-radius-lg: var(--radius-m, 12px);
+	--ebc-gap: var(--space-s, 18px);
+	--ebc-gap-tight: var(--space-2xs, 10px);
+	--ebc-touch: 48px;
+	--ebc-font: inherit;
+
+	box-sizing: border-box;
+	color: var(--ebc-text);
+	display: grid;
+	font-family: var(--ebc-font);
+	font-size: 17px;
+	gap: var(--ebc-gap);
+	line-height: 1.6;
+	text-align: left;
+}
+
+.ebc-form *,
+.ebc-form *::before,
+.ebc-form *::after {
+	box-sizing: inherit;
+}
+
+/* The theme decorates bare headings globally; inside the form they are text. */
+.ebc-form h2,
+.ebc-form h3,
+.ebc-form h4 {
+	background: none;
+	border: 0;
+	color: inherit;
+	font-family: inherit;
+	letter-spacing: normal;
+	padding: 0;
+	text-transform: none;
+}
+
+.ebc-form h2::before,
+.ebc-form h3::before,
+.ebc-form h4::before,
+.ebc-form h2::after,
+.ebc-form h3::after,
+.ebc-form h4::after {
+	content: none;
+	display: none;
+}
+
+/* Steps focus their own heading for screen readers — a programmatic focus that
+   must not paint the theme's ring. */
+.ebc-form .ebc-step__title:focus,
+.ebc-form .ebc-step__title:focus-visible {
+	box-shadow: none;
+	outline: none;
+}
+
+.ebc-form button,
+.ebc-form input,
+.ebc-form select,
+.ebc-form textarea {
+	font-family: inherit;
+	font-size: 17px;
+	line-height: 1.5;
+}
+
+/* ---------- progress ---------- */
+
+.ebc-form__mount {
+	display: grid;
+	gap: var(--ebc-gap);
+}
+
+.ebc-progress {
+	margin-bottom: var(--ebc-gap-tight);
+}
+
+.ebc-progress__list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ebc-gap-tight);
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ebc-progress__item {
+	align-items: center;
+	border: 2px solid var(--ebc-border);
+	border-radius: var(--radius-full, 999px);
+	color: var(--ebc-text-muted);
+	display: flex;
+	font-size: 15px;
+	font-weight: 600;
+	gap: 8px;
+	padding: 8px 16px;
+}
+
+.ebc-progress__num {
+	align-items: center;
+	background: var(--ebc-border);
+	border-radius: 50%;
+	color: var(--ebc-dark);
+	display: inline-flex;
+	flex: 0 0 auto;
+	font-size: 13px;
+	font-weight: 700;
+	height: 24px;
+	justify-content: center;
+	width: 24px;
+}
+
+.ebc-progress__item.is-current {
+	background: var(--ebc-dark);
+	border-color: var(--ebc-dark);
+	color: #ffffff;
+}
+
+.ebc-progress__item.is-current .ebc-progress__num {
+	background: var(--ebc-gold);
+	color: var(--ebc-dark);
+}
+
+.ebc-progress__item.is-done {
+	background: var(--ebc-gold-soft);
+	border-color: var(--ebc-gold);
+	color: var(--ebc-text);
+}
+
+.ebc-progress__item.is-done .ebc-progress__num {
+	background: var(--ebc-gold);
+	color: var(--ebc-dark);
+}
+
+/* ---------- steps ---------- */
+
+.ebc-step {
+	display: grid;
+	gap: var(--ebc-gap);
+}
+
+.ebc-step__title {
+	font-size: 24px;
+	line-height: 1.25;
+	margin: 0;
+	outline: none;
+}
+
+.ebc-step__hint {
+	color: var(--ebc-text-muted);
+	font-size: 17px;
+	margin: calc(-1 * var(--ebc-gap-tight)) 0 0;
+	max-width: 62ch;
+}
+
+.ebc-subtitle {
+	font-size: 19px;
+	margin: 0;
+}
+
+.ebc-group {
+	display: grid;
+	gap: var(--ebc-gap-tight);
+}
+
+.ebc-group__title {
+	color: var(--ebc-text-muted);
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	margin: 0;
+	text-transform: uppercase;
+}
+
+.ebc-group__cards {
+	display: grid;
+	gap: var(--ebc-gap-tight);
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+/* ---------- selectable cards ---------- */
+
+.ebc-card {
+	align-items: center;
+	background: var(--ebc-surface);
+	border: 2px solid var(--ebc-border);
+	border-radius: var(--ebc-radius-lg);
+	color: inherit;
+	cursor: pointer;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 16px;
+	justify-content: space-between;
+	min-height: var(--ebc-touch);
+	padding: 16px 18px;
+	text-align: left;
+	transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+	width: 100%;
+}
+
+.ebc-card:hover {
+	border-color: var(--ebc-gold);
+}
+
+/* Active state is a gold outline — no fill, so the card keeps the page's
+   colour and the selection reads as a frame rather than a block. */
+.ebc-card.is-selected {
+	border-color: var(--ebc-gold);
+	box-shadow: inset 0 0 0 1px var(--ebc-gold);
+}
+
+.ebc-card__name {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.ebc-card__price {
+	color: var(--ebc-gold-strong);
+	font-size: 18px;
+	font-variant-numeric: tabular-nums;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.ebc-card__meta {
+	color: var(--ebc-text-muted);
+	flex-basis: 100%;
+	font-size: 15px;
+}
+
+.ebc-card:focus-visible,
+.ebc-cal__day:focus-visible,
+.ebc-time:focus-visible,
+.ebc-button:focus-visible,
+.ebc-input:focus-visible,
+.ebc-textarea:focus-visible,
+.ebc-checkbox:focus-visible,
+.ebc-cal__nav:focus-visible {
+	outline: 3px solid var(--ebc-gold-strong);
+	outline-offset: 2px;
+}
+
+/* ---------- calendar ---------- */
+
+.ebc-cal {
+	background: var(--ebc-surface);
+	border: 2px solid var(--ebc-border);
+	border-radius: var(--ebc-radius-lg);
+	display: grid;
+	gap: var(--ebc-gap-tight);
+	max-width: 520px;
+	padding: var(--ebc-gap-tight);
+}
+
+.ebc-cal__head {
+	align-items: center;
+	display: flex;
+	gap: 8px;
+	justify-content: space-between;
+}
+
+.ebc-cal__month {
+	font-size: 18px;
+	font-weight: 700;
+	text-transform: capitalize;
+}
+
+.ebc-cal__nav {
+	align-items: center;
+	background: var(--ebc-surface-muted);
+	border: 2px solid var(--ebc-border);
+	border-radius: 50%;
+	color: inherit;
+	cursor: pointer;
+	display: inline-flex;
+	flex: 0 0 auto;
+	height: 44px;
+	justify-content: center;
+	line-height: 1;
+	padding: 0;
+	width: 44px;
+}
+
+.ebc-cal__nav:hover:not([disabled]) {
+	border-color: var(--ebc-gold);
+}
+
+.ebc-cal__nav[disabled] {
+	cursor: default;
+	opacity: 0.35;
+}
+
+.ebc-cal__grid {
+	display: grid;
+	gap: 6px;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.ebc-cal__dow {
+	color: var(--ebc-text-muted);
+	font-size: 13px;
+	font-weight: 700;
+	padding-bottom: 4px;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.ebc-cal__day {
+	align-items: center;
+	aspect-ratio: 1 / 1;
+	background: var(--ebc-surface);
+	border: 2px solid transparent;
+	border-radius: var(--ebc-radius);
+	color: var(--ebc-text);
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	font-size: 16px;
+	font-weight: 600;
+	gap: 2px;
+	justify-content: center;
+	min-height: 44px;
+	padding: 2px;
+	transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.ebc-cal__day.is-free {
+	background: var(--ebc-gold-soft);
+}
+
+.ebc-cal__day.is-free:hover {
+	border-color: var(--ebc-gold);
+}
+
+.ebc-cal__day.is-selected {
+	border-color: var(--ebc-gold);
+	box-shadow: inset 0 0 0 1px var(--ebc-gold);
+	color: var(--ebc-text);
+	font-weight: 700;
+}
+
+.ebc-cal__day[disabled] {
+	color: var(--ebc-text-muted);
+	cursor: default;
+	opacity: 0.4;
+}
+
+.ebc-cal__day--empty {
+	background: none;
+	border: 0;
+	cursor: default;
+}
+
+.ebc-cal__dot {
+	background: var(--ebc-gold-strong);
+	border-radius: 50%;
+	height: 6px;
+	width: 6px;
+}
+
+.ebc-cal__day.is-selected .ebc-cal__dot {
+	background: var(--ebc-gold);
+}
+
+.ebc-cal__legend {
+	color: var(--ebc-text-muted);
+	display: flex;
+	flex-wrap: wrap;
+	font-size: 14px;
+	gap: 14px;
+}
+
+.ebc-cal__legend span {
+	align-items: center;
+	display: inline-flex;
+	gap: 6px;
+}
+
+.ebc-cal__swatch {
+	border-radius: 4px;
+	display: inline-block;
+	height: 14px;
+	width: 14px;
+}
+
+.ebc-cal__swatch--free {
+	background: var(--ebc-gold-soft);
+	border: 2px solid var(--ebc-gold);
+}
+
+.ebc-cal__swatch--selected {
+	background: transparent;
+	border: 2px solid var(--ebc-gold);
+	box-shadow: inset 0 0 0 1px var(--ebc-gold);
+}
+
+.ebc-schedule {
+	align-items: start;
+	display: grid;
+	gap: var(--ebc-gap);
+	grid-template-columns: minmax(260px, 360px) 1fr;
+}
+
+@media (max-width: 860px) {
+	.ebc-schedule {
+		grid-template-columns: 1fr;
+	}
+
+	.ebc-cal {
+		max-width: none;
+	}
+}
+
+.ebc-times-panel {
+	display: grid;
+	gap: 10px;
+}
+
+.ebc-times-caption {
+	color: var(--ebc-text-muted);
+	font-size: 15px;
+	margin: 0;
+}
+
+/* Compact chips: one line per time. Duration and doctor live in the caption
+   unless they actually vary within the day, which keeps a 40-slot day tidy. */
+.ebc-times {
+	display: grid;
+	gap: 8px;
+	grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+}
+
+.ebc-time {
+	align-items: center;
+	background: var(--ebc-surface);
+	border: 2px solid var(--ebc-border);
+	border-radius: var(--ebc-radius);
+	color: inherit;
+	cursor: pointer;
+	display: grid;
+	gap: 0;
+	justify-items: center;
+	min-height: 44px;
+	padding: 8px 6px;
+	text-align: center;
+	transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+/* A dense day would otherwise push the page to thousands of pixels: the list
+   gets its own bounded scroll area, grouped per specialist. */
+.ebc-times-scroll {
+	display: grid;
+	gap: 14px;
+	max-height: 430px;
+	overflow-y: auto;
+	padding-right: 4px;
+}
+
+.ebc-times-group {
+	display: grid;
+	gap: 6px;
+}
+
+.ebc-times-group__title {
+	color: var(--ebc-text-muted);
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	margin: 0;
+	position: sticky;
+	top: 0;
+	background: var(--ebc-surface);
+	padding: 2px 0;
+	z-index: 1;
+}
+
+/* The native picker replaces the grid on phones. */
+.ebc-select-field {
+	display: none;
+}
+
+/* The theme paints form controls in a light grey (measured rgb(158,158,158) on
+   <select>), which wins over "color: inherit". Force the readable brand text
+   colour — including -webkit-text-fill-color, which iOS uses on selects. */
+.ebc-form .ebc-select,
+.ebc-form .ebc-input,
+.ebc-form .ebc-textarea {
+	-webkit-text-fill-color: var(--ebc-text);
+	color: var(--ebc-text);
+}
+
+.ebc-form .ebc-select {
+	appearance: auto;
+	background-color: var(--ebc-surface);
+	font-weight: 600;
+	padding-right: 36px;
+}
+
+.ebc-form .ebc-select option {
+	-webkit-text-fill-color: var(--ebc-text);
+	background-color: var(--ebc-surface);
+	color: var(--ebc-text);
+	font-weight: 400;
+}
+
+.ebc-form .ebc-input::placeholder,
+.ebc-form .ebc-textarea::placeholder {
+	-webkit-text-fill-color: var(--ebc-text-muted);
+	color: var(--ebc-text-muted);
+	opacity: 1;
+}
+
+.ebc-time:hover {
+	border-color: var(--ebc-gold);
+}
+
+.ebc-time.is-selected {
+	border-color: var(--ebc-gold);
+	box-shadow: inset 0 0 0 1px var(--ebc-gold);
+}
+
+.ebc-time__value {
+	font-size: 17px;
+	font-variant-numeric: tabular-nums;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.ebc-time__meta,
+.ebc-time__doctor {
+	color: var(--ebc-text-muted);
+	font-size: 14px;
+}
+
+/* ---------- fields ---------- */
+
+.ebc-fields {
+	display: grid;
+	gap: var(--ebc-gap-tight);
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.ebc-field {
+	display: grid;
+	gap: 6px;
+}
+
+.ebc-field--wide {
+	grid-column: 1 / -1;
+}
+
+.ebc-field__label {
+	color: var(--ebc-text);
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.ebc-input,
+.ebc-textarea {
+	background: var(--ebc-surface);
+	border: 2px solid var(--ebc-border-strong);
+	border-radius: var(--ebc-radius);
+	color: inherit;
+	min-height: var(--ebc-touch);
+	padding: 12px 14px;
+	width: 100%;
+}
+
+.ebc-input:hover,
+.ebc-textarea:hover {
+	border-color: var(--ebc-gold-strong);
+}
+
+.ebc-textarea {
+	line-height: 1.6;
+	min-height: 120px;
+	resize: vertical;
+}
+
+.ebc-input.has-error,
+.ebc-textarea.has-error {
+	border-color: var(--ebc-error);
+}
+
+.ebc-attachments {
+	display: grid;
+	gap: 8px;
+}
+
+.ebc-file-input {
+	padding: 10px 12px;
+}
+
+.ebc-files {
+	display: grid;
+	gap: 6px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ebc-file {
+	background: var(--ebc-surface-muted);
+	border-radius: var(--ebc-radius);
+	font-size: 15px;
+	padding: 10px 14px;
+}
+
+.ebc-consent {
+	align-items: flex-start;
+	display: flex;
+	font-size: 17px;
+	gap: 12px;
+	line-height: 1.55;
+}
+
+.ebc-checkbox {
+	accent-color: var(--ebc-gold-strong);
+	height: 24px;
+	margin: 0;
+	width: 24px;
+}
+
+.ebc-consent a {
+	color: var(--ebc-gold-strong);
+	text-decoration: underline;
+}
+
+.ebc-honeypot {
+	height: 0;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	width: 0;
+}
+
+/* ---------- actions ---------- */
+
+.ebc-nav {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ebc-gap-tight);
+	justify-content: flex-end;
+	margin-top: var(--ebc-gap-tight);
+}
+
+.ebc-button {
+	align-items: center;
+	display: inline-flex;
+	gap: 10px;
+	justify-content: center;
+	background: var(--ebc-gold);
+	border: 2px solid var(--ebc-gold);
+	border-radius: var(--radius-full, 999px);
+	color: var(--ebc-dark);
+	cursor: pointer;
+	font-size: 18px;
+	font-weight: 700;
+	min-height: var(--ebc-touch);
+	padding: 12px 30px;
+	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.ebc-button:hover {
+	background: var(--ebc-dark);
+	border-color: var(--ebc-dark);
+	color: var(--ebc-gold);
+}
+
+.ebc-button[disabled] {
+	cursor: progress;
+	opacity: 0.6;
+}
+
+.ebc-button__icon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	line-height: 0;
+}
+
+.ebc-button--ghost {
+	background: transparent;
+	border-color: var(--ebc-border-strong);
+	color: var(--ebc-text);
+}
+
+.ebc-button--ghost:hover {
+	background: var(--ebc-dark-soft);
+	border-color: var(--ebc-dark);
+	color: var(--ebc-text);
+}
+
+/* ---------- summary & result ---------- */
+
+.ebc-summary {
+	background: var(--ebc-surface-muted);
+	border-left: 4px solid var(--ebc-gold);
+	border-radius: var(--ebc-radius);
+	padding: var(--ebc-gap-tight) var(--ebc-gap);
+}
+
+.ebc-summary.is-empty {
+	display: none;
+}
+
+.ebc-summary__title {
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	margin: 0 0 8px;
+	text-transform: uppercase;
+}
+
+.ebc-summary__list,
+.ebc-result {
+	display: grid;
+	gap: 6px 16px;
+	grid-template-columns: auto 1fr;
+	margin: 0;
+}
+
+.ebc-summary__list dt,
+.ebc-result dt {
+	color: var(--ebc-text-muted);
+	font-size: 15px;
+}
+
+.ebc-summary__list dd,
+.ebc-result dd {
+	font-weight: 600;
+	margin: 0;
+}
+
+.ebc-notice {
+	background: var(--ebc-gold-soft);
+	border-left: 4px solid var(--ebc-gold);
+	border-radius: var(--ebc-radius);
+	margin: 0;
+	padding: 14px 18px;
+}
+
+.ebc-notice--dry {
+	background: #fff6e5;
+	border-left-color: #b45309;
+}
+
+.ebc-payload {
+	background: var(--ebc-dark);
+	border-radius: var(--ebc-radius);
+	color: #f1ece4;
+	font-size: 13px;
+	line-height: 1.5;
+	max-height: 320px;
+	overflow: auto;
+	padding: 16px;
+}
+
+.ebc-meta,
+.ebc-empty {
+	color: var(--ebc-text-muted);
+	margin: 0;
+}
+
+/* Submission failures: a banner, not a whisper. */
+.ebc-alert {
+	align-items: flex-start;
+	background: #fdecea;
+	border: 2px solid var(--ebc-error);
+	border-radius: var(--ebc-radius);
+	color: #7a1c14;
+	display: flex;
+	gap: 12px;
+	outline: none;
+	padding: 14px 16px;
+}
+
+.ebc-alert__icon {
+	color: var(--ebc-error);
+	display: inline-flex;
+	flex: 0 0 auto;
+	line-height: 0;
+	padding-top: 2px;
+}
+
+.ebc-alert__body {
+	display: grid;
+	gap: 4px;
+}
+
+.ebc-alert__hint {
+	font-size: 15px;
+	opacity: 0.9;
+}
+
+.ebc-alert__code {
+	font-size: 13px;
+	opacity: 0.75;
+}
+
+/* Thank-you page */
+.ebc-thanks {
+	gap: var(--ebc-gap-tight);
+}
+
+.ebc-thanks__title {
+	font-size: 27px;
+	line-height: 1.2;
+	margin: 0;
+}
+
+.ebc-thanks .ebc-result {
+	background: var(--ebc-surface-muted);
+	border-left: 4px solid var(--ebc-gold);
+	border-radius: var(--ebc-radius);
+	padding: var(--ebc-gap-tight) var(--ebc-gap);
+}
+
+.ebc-thanks__back {
+	margin: var(--ebc-gap-tight) 0 0;
+}
+
+.ebc-thanks__back .ebc-button {
+	text-decoration: none;
+}
+
+.ebc-error {
+	color: var(--ebc-error);
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.ebc-error--form {
+	border-left: 4px solid var(--ebc-error);
+	padding-left: 12px;
+}
+
+.ebc-form__loading,
+.ebc-form__noscript {
+	color: var(--ebc-text-muted);
+	margin: 0;
+}
+
+.ebc-visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+/* ---------- optional intro (kept for sites that render it inside the form) ---------- */
+
+.ebc-intro {
+	background: var(--ebc-surface-muted);
+	border-radius: var(--ebc-radius-lg);
+	display: grid;
+	gap: var(--ebc-gap-tight);
+	padding: var(--ebc-gap);
+}
+
+.ebc-intro__heading {
+	font-size: 27px;
+	line-height: 1.2;
+	margin: 0;
+}
+
+.ebc-intro__lead {
+	color: var(--ebc-text-muted);
+	margin: 0;
+	max-width: 62ch;
+}
+
+.ebc-intro__steps {
+	display: grid;
+	gap: var(--ebc-gap-tight);
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ebc-intro__step {
+	align-items: baseline;
+	display: grid;
+	gap: 4px 14px;
+	grid-template-columns: 32px 1fr;
+}
+
+.ebc-intro__num {
+	align-items: center;
+	background: var(--ebc-gold);
+	border-radius: 50%;
+	color: var(--ebc-dark);
+	display: inline-flex;
+	font-size: 15px;
+	font-weight: 700;
+	height: 32px;
+	justify-content: center;
+	width: 32px;
+}
+
+.ebc-intro__title {
+	font-weight: 600;
+}
+
+.ebc-intro__hint {
+	color: var(--ebc-text-muted);
+	font-size: 15px;
+	grid-column: 2;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 600px) {
+	.ebc-form {
+		font-size: 16px;
+	}
+
+	.ebc-thanks__title {
+		font-size: 22px;
+	}
+
+	.ebc-thanks .ebc-result,
+	.ebc-result {
+		grid-template-columns: 1fr;
+	}
+
+	.ebc-step__title {
+		font-size: 21px;
+	}
+
+	.ebc-group__cards,
+	.ebc-fields {
+		grid-template-columns: 1fr;
+	}
+
+	.ebc-times-scroll,
+	.ebc-group__cards--doctors {
+		display: none;
+	}
+
+	.ebc-select-field {
+		display: grid;
+		gap: 6px;
+	}
+
+	.ebc-nav {
+		justify-content: center;
+	}
+
+	.ebc-nav .ebc-button {
+		flex: 0 1 auto;
+		min-width: 160px;
+		padding: 12px 24px;
+	}
+
+	/* Three full titles never fit one line on a phone, and a wrapped progress
+	   bar reads as clutter: show numbers only, with the label on the step the
+	   visitor is actually on. */
+	.ebc-progress__list {
+		flex-wrap: nowrap;
+		gap: 8px;
+	}
+
+	.ebc-progress__item {
+		font-size: 14px;
+		gap: 0;
+		padding: 6px;
+	}
+
+	.ebc-progress__item .ebc-progress__label {
+		display: none;
+	}
+
+	.ebc-progress__item.is-current {
+		gap: 8px;
+		padding: 6px 14px 6px 6px;
+	}
+
+	.ebc-progress__item.is-current .ebc-progress__label {
+		display: inline;
+	}
+
+	.ebc-cal__day {
+		font-size: 15px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ebc-form * {
+		transition: none !important;
+	}
+}

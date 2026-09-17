@@ -1,0 +1,13 @@
+# build output
+dist/
+*.zip
+
+# editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# never commit a key or a site-specific override
+*.local.php
+easybusy-key.php
