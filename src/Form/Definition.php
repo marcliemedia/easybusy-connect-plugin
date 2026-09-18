@@ -6,6 +6,7 @@ namespace EasyBusyConnect\Form;
 
 use EasyBusyConnect\Api\Capabilities;
 use EasyBusyConnect\Settings;
+use EasyBusyConnect\Support\Countries;
 
 /**
  * The step graph is derived from the live capability map, not hardcoded:
@@ -94,7 +95,10 @@ final class Definition
             'email'        => sanitize_email((string) ($input['email'] ?? '')),
             'phone'        => $this->normalisePhone((string) ($input['phone'] ?? '')),
             'personalId'   => preg_replace('/\D+/', '', (string) ($input['personalId'] ?? '')) ?? '',
-            'countryCode'  => strtoupper(substr($value($input, 'countryCode', 2), 0, 2)),
+            // A booking with a null country is rejected by EasyBusy, so an
+            // unknown or missing code degrades to the configured default
+            // instead of costing the patient their appointment.
+            'countryCode'  => Countries::normalise((string) ($input['countryCode'] ?? '')) ?: Settings::defaultCountry(),
             'streetName'   => $value($input, 'streetName', 80),
             'streetNumber' => $value($input, 'streetNumber', 20),
             'postalCode'   => $value($input, 'postalCode', 12),
@@ -119,14 +123,11 @@ final class Definition
             $errors['consent'] = __('Please confirm you agree to the processing of your data.', 'easybusy-connect');
         }
 
-        // EasyBusy can only auto-match a patient record when OIB *and* country
-        // are both present; half the pair leaves clinic staff reconciling by hand.
-        $wantsOib = (bool) Settings::get('require_oib', false);
-        if ($wantsOib && $fields['personalId'] === '') {
+        // countryCode is never empty (it falls back to the clinic's default), so
+        // OIB no longer needs a companion check: EasyBusy can always auto-match
+        // the patient record when an OIB is given.
+        if ((bool) Settings::get('require_oib', false) && $fields['personalId'] === '') {
             $errors['personalId'] = __('Please enter your personal identification number (OIB).', 'easybusy-connect');
-        }
-        if ($fields['personalId'] !== '' && $fields['countryCode'] === '') {
-            $errors['countryCode'] = __('Please select the country that issued your OIB.', 'easybusy-connect');
         }
 
         return ['fields' => $fields, 'errors' => $errors];

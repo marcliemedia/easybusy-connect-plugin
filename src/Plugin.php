@@ -47,6 +47,12 @@ final class Plugin
 
         add_action('init', [BricksElement::class, 'register']);
 
+        // DONOTCACHEPAGE only speaks to caching *plugins*. SiteGround's nginx
+        // layer keys on response headers, and it happily served a page whose
+        // asset ?ver= still pointed at the previous release. Real headers, sent
+        // before any output, are the only thing every layer honours.
+        add_action('template_redirect', [Assets::class, 'sendNoStoreHeaders']);
+
         self::get(FluentForms::class)->register();
 
         // Retention purge: health-adjacent contact data must not accumulate.
@@ -156,7 +162,7 @@ final class Plugin
             Catalog::class      => new Catalog(self::get(Client::class), self::get(Capabilities::class)),
             Slots::class        => new Slots(self::get(Client::class), self::get(Capabilities::class)),
             Booking::class      => new Booking(self::get(Client::class)),
-            Leads::class        => new Leads(self::get(Client::class)),
+            Leads::class        => new Leads(self::get(Client::class), self::get(Capabilities::class)),
             Definition::class   => new Definition(self::get(Capabilities::class)),
             Notify::class       => new Notify(),
             EntriesPage::class  => new EntriesPage(),

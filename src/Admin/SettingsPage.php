@@ -9,6 +9,7 @@ use EasyBusyConnect\Api\Catalog;
 use EasyBusyConnect\Api\Slots;
 use EasyBusyConnect\Notify;
 use EasyBusyConnect\Settings;
+use EasyBusyConnect\Support\Countries;
 use EasyBusyConnect\Support\Log;
 use EasyBusyConnect\Support\Tz;
 
@@ -169,6 +170,22 @@ final class SettingsPage
         }
         echo '</div>';
 
+        // A group the probe reported as reachable but a real call refused. Without
+        // this the screen contradicts itself: "GET /lead → 405" next to a grey
+        // leads chip.
+        foreach ((array) ($map['denied'] ?? []) as $group => $denial) {
+            printf(
+                '<p class="ebc-help">%s</p>',
+                esc_html(sprintf(
+                    /* translators: 1: endpoint group, 2: date, 3: vendor message */
+                    __('“%1$s” answered as available but the vendor refused a live call on %2$s: %3$s Ask EasyBusy to add the group to the key, then re-probe.', 'easybusy-connect'),
+                    (string) $group,
+                    (string) ($denial['at'] ?? ''),
+                    (string) ($denial['reason'] ?? '')
+                ))
+            );
+        }
+
         if (!empty($map['probes'])) {
             echo '<details class="ebc-details"><summary>' . esc_html__('Probe results', 'easybusy-connect') . '</summary><pre>';
             foreach ((array) $map['probes'] as $endpoint => $status) {
@@ -239,8 +256,15 @@ final class SettingsPage
     {
         Shell::cardOpen(__('Steps and fields', 'easybusy-connect'), __('What the patient is asked for. Fewer fields convert better.', 'easybusy-connect'));
         Shell::number('slot_horizon', __('Slot search horizon (days)', 'easybusy-connect'), (int) $settings['slot_horizon']);
-        Shell::toggle('require_oib', __('Require OIB', 'easybusy-connect'), (bool) $settings['require_oib'], __('Lets EasyBusy match the patient record automatically; adds two required fields.', 'easybusy-connect'));
+        Shell::toggle('require_oib', __('Require OIB', 'easybusy-connect'), (bool) $settings['require_oib'], __('Lets EasyBusy match the patient record automatically; adds one required field.', 'easybusy-connect'));
         Shell::toggle('collect_address', __('Collect address', 'easybusy-connect'), (bool) $settings['collect_address']);
+        Shell::select(
+            'default_country',
+            __('Default country', 'easybusy-connect'),
+            Countries::options(determine_locale()),
+            Settings::defaultCountry(),
+            __('Preselected in the form. EasyBusy refuses a booking without a country, so one is always sent.', 'easybusy-connect')
+        );
         Shell::toggle('attachments', __('Allow attachments', 'easybusy-connect'), (bool) $settings['attachments'], __('X-ray or PDF. Files reach EasyBusy with a lead — the booking API has no upload endpoint.', 'easybusy-connect'));
         Shell::number('attachment_max_files', __('Max files per submission', 'easybusy-connect'), (int) $settings['attachment_max_files']);
         Shell::number('attachment_max_mb', __('Max file size (MB)', 'easybusy-connect'), (int) $settings['attachment_max_mb']);
@@ -459,6 +483,7 @@ final class SettingsPage
             'slot_horizon'         => max(1, min(365, (int) ($_POST['slot_horizon'] ?? 60))),
             'require_oib'          => !empty($_POST['require_oib']),
             'collect_address'      => !empty($_POST['collect_address']),
+            'default_country'      => Countries::normalise((string) ($_POST['default_country'] ?? '')) ?: Countries::FALLBACK,
             'attachments'          => !empty($_POST['attachments']),
             'attachment_max_files' => max(1, min(10, (int) ($_POST['attachment_max_files'] ?? 3))),
             'attachment_max_mb'    => max(1, min(50, (int) ($_POST['attachment_max_mb'] ?? 10))),

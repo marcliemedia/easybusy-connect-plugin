@@ -25,6 +25,9 @@ final class Settings
         'thank_you_page'  => 0,       // page holding [easybusy_thank_you]
         'require_oib'     => false,
         'collect_address' => false,
+        // EasyBusy rejects a booking whose patientInfo.address.countryCode is
+        // null, so the form always sends one; this is the preselected value.
+        'default_country' => 'HR',
         // What an Entries row keeps of the person: minimal | full | none.
         'store_mode'      => 'minimal',
         'retention_days'  => 90,       // entries older than this are purged daily
@@ -82,6 +85,18 @@ final class Settings
         $mode = (string) self::get('store_mode', 'minimal');
 
         return in_array($mode, ['minimal', 'full', 'none'], true) ? $mode : 'minimal';
+    }
+
+    /**
+     * Preselected country of the booking form, guaranteed to be a real ISO
+     * 3166-1 alpha-2 code: it ends up in a payload EasyBusy refuses when null
+     * and does not validate when wrong.
+     */
+    public static function defaultCountry(): string
+    {
+        $code = \EasyBusyConnect\Support\Countries::normalise((string) self::get('default_country', ''));
+
+        return $code !== '' ? $code : \EasyBusyConnect\Support\Countries::FALLBACK;
     }
 
     public static function get(string $key, mixed $fallback = null): mixed

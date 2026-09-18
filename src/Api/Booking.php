@@ -13,12 +13,14 @@ use EasyBusyConnect\Support\Tz;
  *
  * The vendor documentation is inconsistent about the path: the heading says
  * POST /simple-booking/request-slots/{slotId} while its own curl example uses
- * the singular /request-slot/{slotId}. Both are attempted, plural first, and
- * the variant that answers is remembered.
+ * the singular /request-slot/{slotId}. Live, only the singular answers (the
+ * plural is a 404), so it is tried first; the other spelling stays as a
+ * fallback in case the vendor ever aligns the route with its own heading, and
+ * whichever answers is remembered.
  */
 final class Booking
 {
-    private const PATHS = ['/simple-booking/request-slots/%d', '/simple-booking/request-slot/%d'];
+    private const PATHS = ['/simple-booking/request-slot/%d', '/simple-booking/request-slots/%d'];
     private const OPTION_PATH = 'ebc_booking_path';
 
     public function __construct(private Client $client)
@@ -59,10 +61,13 @@ final class Booking
             }
         }
 
+        // The vendor's own wording ("must not be null") is the only thing that
+        // tells which field it rejected, so it belongs in the log.
         Log::add('error', 'booking failed', [
             'slot_id'    => $slotId,
             'service_id' => $serviceId,
             'code'       => $lastError?->get_error_code(),
+            'reason'     => $lastError?->get_error_message(),
         ]);
 
         return $lastError ?? new \WP_Error('ebc_booking_failed', __('The appointment could not be requested.', 'easybusy-connect'));

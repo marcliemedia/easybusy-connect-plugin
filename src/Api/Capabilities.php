@@ -56,6 +56,9 @@ final class Capabilities
             'config'    => [],
             'languages' => [],
             'probes'    => [],
+            // Groups a live call proved denied after the probe said otherwise;
+            // a manual re-probe deliberately clears them and starts over.
+            'denied'    => [],
         ];
 
         $ping = $this->client->probeStatus('GET', '/ping', false);
@@ -102,9 +105,15 @@ final class Capabilities
         $map['probes']['GET /simple-booking/bookable-services'] = $this->describe($services);
         $map['groups']['simple_booking'] = !is_wp_error($services);
 
+        // Optimistic by necessity: the only honest test of POST /lead is a POST
+        // /lead, and every lead field is optional, so a probe would create a
+        // junk record in the clinic's CRM. GET /lead answering 405 instead of
+        // 403 means the *path* exists; a real POST that comes back 403 demotes
+        // the group through deny() (verified live 2026-09-18 — this key is
+        // denied on POST while GET still answers 405).
         $leadStatus = $this->client->probeStatus('GET', '/lead');
         $map['probes']['GET /lead'] = is_wp_error($leadStatus) ? $leadStatus->get_error_code() : $leadStatus;
-        $map['groups']['leads'] = $leadStatus === 405; // 403 would mean denied
+        $map['groups']['leads'] = $leadStatus === 405;
 
         $priceList = $this->client->get('/price-list');
         $map['probes']['GET /price-list'] = $this->describe($priceList);
@@ -135,6 +144,28 @@ final class Capabilities
         $map = $this->get();
 
         return (bool) ($map['groups'][$group] ?? false);
+    }
+
+    /**
+     * Records a denial the site actually hit, because probing cannot always see
+     * one: GET /lead answers 405 (the vendor authorises after binding the
+     * request body), so the Leads group looks granted until a real POST /lead
+     * comes back 403 — which is exactly what happens on this key. Without this,
+     * the form would keep offering attachments and keep falling back to a lead
+     * that can never be created.
+     */
+    public function deny(string $group, string $reason): void
+    {
+        $map = $this->get();
+        if (($map['groups'][$group] ?? false) === false) {
+            return;
+        }
+
+        $map['groups'][$group] = false;
+        $map['denied'][$group] = ['at' => gmdate('c'), 'reason' => $reason];
+        update_option(self::OPTION, $map, false);
+
+        Log::add('warning', 'capability denied in use', ['group' => $group, 'reason' => $reason]);
     }
 
     public function gridMinutes(): int

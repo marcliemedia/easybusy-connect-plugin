@@ -35,6 +35,51 @@ final class Assets
         }
     }
 
+    /**
+     * Marks the booking and thank-you pages uncacheable at the HTTP level.
+     *
+     * Runs on template_redirect — headers must go out before the theme prints
+     * anything, so the enqueue path (which happens mid-content) is far too late.
+     * Detection reads the Bricks layout as well as post_content, because Bricks
+     * keeps the shortcode in `_bricks_page_content_2` and never in the post.
+     */
+    public static function sendNoStoreHeaders(): void
+    {
+        if (is_admin() || headers_sent()) {
+            return;
+        }
+
+        $post = get_queried_object();
+        if (!$post instanceof \WP_Post) {
+            return;
+        }
+
+        $haystack = $post->post_content;
+        $bricks = get_post_meta($post->ID, '_bricks_page_content_2', true);
+        if ($bricks !== '' && $bricks !== false) {
+            $haystack .= is_scalar($bricks) ? (string) $bricks : (string) wp_json_encode($bricks);
+        }
+
+        // Shortcodes and the Bricks element slug; the thank-you page carries
+        // personal data and must never be cached either.
+        $matched = false;
+        foreach (['easybusy_booking', 'easybusy-booking', 'easybusy_thank_you'] as $marker) {
+            if (str_contains($haystack, $marker)) {
+                $matched = true;
+                break;
+            }
+        }
+        if (!$matched) {
+            return;
+        }
+
+        nocache_headers();
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        if (!defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+    }
+
     /** @return array<string,string> */
     private function strings(): array
     {
@@ -57,7 +102,7 @@ final class Assets
             'email'            => __('E-mail', 'easybusy-connect'),
             'phone'            => __('Phone (with country code)', 'easybusy-connect'),
             'personalId'       => __('OIB (personal identification number)', 'easybusy-connect'),
-            'countryCode'      => __('Country code', 'easybusy-connect'),
+            'country'          => __('Country', 'easybusy-connect'),
             'streetName'       => __('Street', 'easybusy-connect'),
             'streetNumber'     => __('Number', 'easybusy-connect'),
             'postalCode'       => __('Postal code', 'easybusy-connect'),

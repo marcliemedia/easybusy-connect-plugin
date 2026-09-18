@@ -22,7 +22,7 @@ Bricks. Three steps:
 2. **Month calendar** + the times of the chosen day. Free days are outlined,
    the rest are disabled; times are grouped per specialist.
 3. **Your details** — message, optional file upload (ortopan/X-ray), contact,
-   consent.
+   **country**, consent.
 
 Every step opens on a sensible default (first service, no preference, earliest
 free day and time), so the summary is populated from the start. On submit the
@@ -112,7 +112,7 @@ src/Store/Submissions.php  entries table, masking, stats, export
 src/Admin/               Menu, SettingsPage, EntriesPage, Shell (UI kit)
 src/Frontend/            Shortcode, Bricks element, assets, thank-you page
 src/Integrations/        Fluent Forms → EasyBusy leads
-src/Support/             Log, RateLimit, Tz, Uploads
+src/Support/             Countries, Log, RateLimit, Tz, Uploads
 src/Cli/Commands.php     WP-CLI
 assets/                  form.css/js (front end), admin.css/js
 languages/               Croatian translation
@@ -121,7 +121,14 @@ languages/               Croatian translation
 Design rules worth keeping:
 
 - **Capability-driven.** Nothing assumes an endpoint exists; `Capabilities`
-  probes and features gate on the result.
+  probes and features gate on the result. A group the probe cannot test
+  honestly (`POST /lead` would create a junk record) is demoted by
+  `Capabilities::deny()` the first time a live call returns 403.
+- **Country is mandatory.** EasyBusy answers `400 must not be null` to an
+  appointment request whose `patientInfo.address.countryCode` is missing, so
+  the form always asks for a country and the server always sends one —
+  falling back to **Settings → Booking form → Default country** if the browser
+  sent nothing usable.
 - **Nothing secret in the browser.** The front end only ever talks to the
   plugin's own REST namespace.
 - **Front-end sizes in px.** Themes that set `html { font-size: 10px }` would

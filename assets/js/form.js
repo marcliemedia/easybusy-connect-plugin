@@ -1167,17 +1167,49 @@
 			]);
 		}
 
+		/** Closed list: EasyBusy stores whatever string it is sent, typos included. */
+		function countryField() {
+			var name = 'countryCode';
+			var current = self.state.contact[name] || config.defaultCountry || '';
+			var select = el('select', {
+				class: 'ebc-input ebc-select' + (self.state.errors[name] ? ' has-error' : ''),
+				id: 'ebc-' + name,
+				name: name,
+				required: 'required',
+				'aria-invalid': self.state.errors[name] ? 'true' : null,
+				onchange: function (event) {
+					self.state.contact[name] = event.target.value;
+				}
+			});
+
+			Object.keys(config.countries || {}).forEach(function (code) {
+				var option = el('option', { value: code, text: config.countries[code] });
+				if (code === current) {
+					option.selected = true;
+				}
+				select.appendChild(option);
+			});
+			self.state.contact[name] = current;
+
+			return el('label', { class: 'ebc-field' }, [
+				el('span', { class: 'ebc-field__label', text: text('country', 'Country') + ' *' }),
+				select,
+				self.state.errors[name] ? el('span', { class: 'ebc-error', text: self.state.errors[name] }) : null
+			]);
+		}
+
+		// The country travels with every request: EasyBusy rejects an appointment
+		// whose patientInfo.address.countryCode is null.
 		var fields = [
 			field('firstName', text('firstName', 'First name'), 'text', true),
 			field('lastName', text('lastName', 'Last name'), 'text', true),
 			field('email', text('email', 'E-mail'), 'email', true),
-			field('phone', text('phone', 'Phone'), 'tel', true)
+			field('phone', text('phone', 'Phone'), 'tel', true),
+			countryField()
 		];
 
-		// OIB only auto-matches together with the issuing country.
 		if (config.requireOib) {
 			fields.push(field('personalId', text('personalId', 'OIB'), 'text', true));
-			fields.push(field('countryCode', text('countryCode', 'Country code'), 'text', true));
 		}
 		if (config.collectAddress) {
 			fields.push(field('streetName', text('streetName', 'Street'), 'text', false));

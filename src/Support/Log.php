@@ -18,7 +18,7 @@ final class Log
     private const SAFE_KEYS = [
         'method', 'path', 'status', 'code', 'error_type', 'duration_ms', 'attempt',
         'service_id', 'doctor_id', 'slot_id', 'appointment_id', 'lead_id',
-        'language', 'count', 'mode', 'dry_run', 'step', 'cache',
+        'language', 'count', 'mode', 'dry_run', 'step', 'cache', 'group',
         // wp_mail()'s own failure text — no patient data, and the one thing you
         // need when notifications stop arriving.
         'reason',

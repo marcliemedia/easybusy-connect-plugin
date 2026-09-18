@@ -95,7 +95,9 @@ final class FluentForms
             'email'       => (string) ($fields['email'] ?? ''),
             'phone'       => (string) preg_replace('/\D+/', '', (string) ($fields['phone'] ?? '')),
             'city'        => (string) ($fields['city'] ?? ''),
-            'countryCode' => '',
+            // The contact form asks for no country; the clinic's default is the
+            // honest answer and EasyBusy files the lead under a real country.
+            'countryCode' => Settings::defaultCountry(),
         ];
 
         // A submission with no way to reach the patient is not a lead.

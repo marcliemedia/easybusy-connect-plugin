@@ -11,6 +11,7 @@ use EasyBusyConnect\Form\Definition;
 use EasyBusyConnect\Form\Draft;
 use EasyBusyConnect\Form\Submit;
 use EasyBusyConnect\Settings;
+use EasyBusyConnect\Support\Countries;
 use EasyBusyConnect\Support\RateLimit;
 use EasyBusyConnect\Support\Tz;
 use EasyBusyConnect\Support\Uploads;
@@ -114,6 +115,10 @@ final class Controller
                 'dryRun'          => Settings::isDryRun(),
                 'requireOib'      => (bool) Settings::get('require_oib', false),
                 'collectAddress'  => (bool) Settings::get('collect_address', false),
+                // EasyBusy refuses a booking without a country, so the picker is
+                // never optional and always opens on a valid code.
+                'defaultCountry'  => Settings::defaultCountry(),
+                'countries'       => Countries::options($language),
                 'attachments'     => (bool) Settings::get('attachments', true) && $this->capabilities->grants('leads'),
                 'maxFiles'        => Uploads::maxFiles(),
                 'thankYouUrl'     => \EasyBusyConnect\Frontend\ThankYou::url(),

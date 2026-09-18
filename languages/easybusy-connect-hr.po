@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: EasyBusy Connect 0.5.0\n"
+"Project-Id-Version: EasyBusy Connect 0.10.0\n"
 "Language: hr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -168,8 +168,8 @@ msgstr "Telefon (s međunarodnim prefiksom)"
 msgid "OIB (personal identification number)"
 msgstr "OIB (osobni identifikacijski broj)"
 
-msgid "Country code"
-msgstr "Oznaka države"
+msgid "Country"
+msgstr "Država"
 
 msgid "Street"
 msgstr "Ulica"
@@ -223,9 +223,6 @@ msgstr "Potvrdite da pristajete na obradu svojih podataka."
 
 msgid "Please enter your personal identification number (OIB)."
 msgstr "Unesite svoj OIB."
-
-msgid "Please select the country that issued your OIB."
-msgstr "Odaberite državu koja je izdala vaš OIB."
 
 msgid "Please correct the highlighted fields."
 msgstr "Ispravite označena polja."

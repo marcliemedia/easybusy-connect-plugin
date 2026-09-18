@@ -11,6 +11,7 @@ use EasyBusyConnect\Api\Leads;
 use EasyBusyConnect\Api\Slots;
 use EasyBusyConnect\Notify;
 use EasyBusyConnect\Settings;
+use EasyBusyConnect\Support\Countries;
 use EasyBusyConnect\Support\Log;
 use EasyBusyConnect\Support\Uploads;
 use EasyBusyConnect\Store\Submissions;
@@ -290,18 +291,25 @@ final class Submit
     }
 
     /**
+     * patientInfo.address.countryCode is mandatory: without it the vendor answers
+     * 400 "must not be null" and no appointment is created (verified live
+     * 2026-09-18). It is therefore sent on every request, whether or not the
+     * rest of the address is collected.
+     *
      * @param array<string,string> $contact
      * @return array<string,mixed>
      */
     private function patientInfo(array $contact, string $language): array
     {
+        $country = Countries::normalise($contact['countryCode'] ?? '') ?: Settings::defaultCountry();
+
         $address = array_filter([
             'streetName'   => $contact['streetName'],
             'streetNumber' => $contact['streetNumber'],
             'postalCode'   => $contact['postalCode'],
             'city'         => $contact['city'],
-            'countryCode'  => $contact['countryCode'],
         ], static fn (string $value): bool => $value !== '');
+        $address['countryCode'] = $country;
 
         $info = [
             'firstName'    => $contact['firstName'],
@@ -309,15 +317,13 @@ final class Submit
             'languageCode' => $language,
             'email'        => ['email' => $contact['email']],
             'phone'        => ['number' => $contact['phone']],
+            'address'      => $address,
         ];
 
-        // personalId only auto-matches together with address.countryCode; sending
-        // one without the other just buries the data in the appointment note.
-        if ($contact['personalId'] !== '' && $contact['countryCode'] !== '') {
+        // personalId auto-matches the patient record together with the country,
+        // which is now always present.
+        if ($contact['personalId'] !== '') {
             $info['personalId'] = $contact['personalId'];
-        }
-        if ($address !== []) {
-            $info['address'] = $address;
         }
 
         return $info;

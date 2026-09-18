@@ -20,7 +20,7 @@ use EasyBusyConnect\Support\RateLimit;
  */
 final class Leads
 {
-    public function __construct(private Client $client)
+    public function __construct(private Client $client, private Capabilities $capabilities)
     {
     }
 
@@ -34,6 +34,11 @@ final class Leads
         $response = $this->client->post('/lead', $payload);
         if (is_wp_error($response)) {
             Log::add('error', 'lead failed', ['code' => $response->get_error_code()]);
+            if ($response->get_error_code() === 'ebc_forbidden') {
+                // The key does not carry the Leads group after all — stop
+                // offering attachments and stop falling back to a dead channel.
+                $this->capabilities->deny('leads', (string) $response->get_error_message());
+            }
 
             return $response;
         }
