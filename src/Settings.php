@@ -45,7 +45,6 @@ final class Settings
         'ff_forms'        => '',       // Fluent Forms ids forwarded as leads
         'ui_locale'       => 'hr',     // plugin locale; site locale is en_US
         'delete_data_on_uninstall' => false,
-        'ttl_company'     => 43200,
         'ttl_slots'       => 60,
     ];
 
