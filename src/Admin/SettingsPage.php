@@ -377,8 +377,7 @@ final class SettingsPage
     /** @param array<string,mixed> $settings */
     private function panelAdvanced(array $settings): void
     {
-        Shell::cardOpen(__('Caching', 'easybusy-connect'), __('Slot data must stay fresh: a cached slot id is a dead booking.', 'easybusy-connect'));
-        Shell::number('ttl_catalog', __('Catalog cache (seconds)', 'easybusy-connect'), (int) $settings['ttl_catalog']);
+        Shell::cardOpen(__('Caching', 'easybusy-connect'), __('Services and specialists are always read live from EasyBusy, so a change in the clinic shows up on the next visit. Only slot lists are cached, for seconds: a cached slot id is a dead booking.', 'easybusy-connect'));
         Shell::number('ttl_slots', __('Slot cache (seconds)', 'easybusy-connect'), (int) $settings['ttl_slots']);
         $this->actionButton('ebc_purge', __('Purge EasyBusy cache', 'easybusy-connect'));
         Shell::cardClose();
@@ -505,7 +504,6 @@ final class SettingsPage
                 : 'minimal',
             'retention_days'       => max(0, min(3650, (int) ($_POST['retention_days'] ?? 90))),
             'delete_data_on_uninstall' => !empty($_POST['delete_data_on_uninstall']),
-            'ttl_catalog'          => max(60, min(86400, (int) ($_POST['ttl_catalog'] ?? 3600))),
             'ttl_slots'            => max(15, min(900, (int) ($_POST['ttl_slots'] ?? 60))),
         ];
 

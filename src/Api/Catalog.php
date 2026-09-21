@@ -4,15 +4,33 @@ declare(strict_types=1);
 
 namespace EasyBusyConnect\Api;
 
-use EasyBusyConnect\Settings;
+use EasyBusyConnect\Support\Log;
 
 /**
  * Bookable services and doctors. `bookable-services` already carries price and
  * currency, so step 1 of the form shows prices even though the price-list group
  * is denied to the current key.
+ *
+ * Every read goes to EasyBusy live. The clinic enables a service or assigns a
+ * specialist in their system and expects the next visitor to see it, so a
+ * read-through cache here serves a catalogue that no longer matches the clinic
+ * — up to 0.10.0 it cached for an hour and hid both a newly enabled service and
+ * a newly assigned specialist for that long, with no request reaching the
+ * vendor. Within a single request the answer is memoised, and the last
+ * successful answer is retained only as a fallback for a failed call, so an
+ * outage degrades to the previous catalogue instead of an empty step 1.
  */
 final class Catalog
 {
+    /**
+     * How long the last successful answer stays usable. This is not a cache:
+     * it is read only after the live call fails.
+     */
+    private const FALLBACK_TTL = DAY_IN_SECONDS;
+
+    /** @var array<string,array<int,array<string,mixed>>> Per-request memo. */
+    private array $memo = [];
+
     public function __construct(private Client $client, private Capabilities $capabilities)
     {
     }
@@ -22,7 +40,7 @@ final class Catalog
      */
     public function services(string $language): array|\WP_Error
     {
-        return $this->cached('services', $language, '/simple-booking/bookable-services', static function (array $rows): array {
+        return $this->live('services', $language, '/simple-booking/bookable-services', static function (array $rows): array {
             $services = [];
             foreach ($rows as $row) {
                 if (!is_array($row) || !isset($row['serviceId'])) {
@@ -54,7 +72,7 @@ final class Catalog
             return [];
         }
 
-        return $this->cached('doctors', $language, '/simple-booking/bookable-doctors', static function (array $rows): array {
+        return $this->live('doctors', $language, '/simple-booking/bookable-doctors', static function (array $rows): array {
             $doctors = [];
             foreach ($rows as $row) {
                 if (!is_array($row) || !isset($row['doctorId'])) {
@@ -106,8 +124,11 @@ final class Catalog
         return false;
     }
 
+    /** Drops the fallback copies; a live read happens on the next request anyway. */
     public function flush(): void
     {
+        $this->memo = [];
+
         foreach (['services', 'doctors'] as $kind) {
             foreach (array_keys($this->capabilities->languages()) as $language) {
                 delete_transient(self::key($kind, (string) $language));
@@ -117,26 +138,40 @@ final class Catalog
     }
 
     /**
+     * One live call per request per kind/language, with the last good answer as
+     * the only fallback.
+     *
      * @param callable(array<int,mixed>):array<int,array<string,mixed>> $shape
      * @return array<int,array<string,mixed>>|\WP_Error
      */
-    private function cached(string $kind, string $language, string $path, callable $shape): array|\WP_Error
+    private function live(string $kind, string $language, string $path, callable $shape): array|\WP_Error
     {
-        $key = self::key($kind, $language);
-        $cached = get_transient($key);
-        if (is_array($cached)) {
-            return $cached;
+        $memoKey = $kind . '|' . $language;
+        if (isset($this->memo[$memoKey])) {
+            return $this->memo[$memoKey];
         }
 
         $rows = $this->client->get($path, ['languageCode' => $language]);
         if (is_wp_error($rows)) {
-            return $rows;
+            $fallback = get_transient(self::key($kind, $language));
+            if (!is_array($fallback)) {
+                return $rows;
+            }
+
+            Log::add('warning', 'catalog served from fallback', [
+                'path'     => $path,
+                'language' => $language,
+                'cache'    => 'fallback',
+                'code'     => $rows->get_error_code(),
+            ]);
+
+            return $this->memo[$memoKey] = $fallback;
         }
 
         $shaped = $shape(is_array($rows) ? $rows : []);
-        set_transient($key, $shaped, (int) Settings::get('ttl_catalog', 3600));
+        set_transient(self::key($kind, $language), $shaped, self::FALLBACK_TTL);
 
-        return $shaped;
+        return $this->memo[$memoKey] = $shaped;
     }
 
     private static function key(string $kind, string $language): string

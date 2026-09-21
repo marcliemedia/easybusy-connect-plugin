@@ -46,7 +46,6 @@ final class Settings
         'ui_locale'       => 'hr',     // plugin locale; site locale is en_US
         'delete_data_on_uninstall' => false,
         'ttl_company'     => 43200,
-        'ttl_catalog'     => 3600,
         'ttl_slots'       => 60,
     ];
 

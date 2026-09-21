@@ -41,7 +41,7 @@ navigation costs no further API calls.
   and type filters, search, CSV export, expandable technical detail per row.
 - **Settings** — tabbed: *Connection* (capability probe, API key, dry run),
   *Booking form*, *Email* (editable templates + 12 placeholders), *Privacy &
-  data*, *Advanced* (cache TTLs, paged API log).
+  data*, *Advanced* (slot cache TTL, paged API log).
 - Dashboard widget with the connection state and the last five requests.
 - WP-CLI: `wp easybusy check|slots|entries|purge-cache|purge-entries`.
 
@@ -71,6 +71,12 @@ navigation costs no further API calls.
 
 Exclude the booking page, the thank-you page and `/wp-json/easybusy/v1/` from
 any page/HTML cache. A cached `slotId` is a dead booking.
+
+Services and specialists are **never** cached server-side: each request to
+`/wp-json/easybusy/v1/services` and `/doctors` calls EasyBusy, so enabling a
+service or assigning a specialist in the clinic system shows up on the next
+visit. The last successful answer is kept for 24 h and used only when the API
+call fails, so an outage shows the previous catalogue instead of an empty step.
 
 ### E-mail
 
