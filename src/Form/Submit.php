@@ -132,7 +132,7 @@ final class Submit
             $preview = [
                 'dry_run'   => true,
                 'mode'      => 'booking',
-                'endpoint'  => sprintf('POST /v2/simple-booking/request-slots/%d', $slotId),
+                'endpoint'  => $this->booking->endpoint($slotId),
                 'query'     => array_filter(['startTimestamp' => $start, 'languageCode' => $language]),
                 'payload'   => ['serviceId' => $serviceId, 'message' => $message, 'patientInfo' => $patientInfo],
                 'slot'      => $slot,

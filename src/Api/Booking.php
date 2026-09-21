@@ -73,6 +73,16 @@ final class Booking
         return $lastError ?? new \WP_Error('ebc_booking_failed', __('The appointment could not be requested.', 'easybusy-connect'));
     }
 
+    /**
+     * The path the next live request would use. The dry run is a rehearsal, so
+     * it must print the resolved spelling, not the one the vendor's heading
+     * documents and its API answers with a 404.
+     */
+    public function endpoint(int $slotId): string
+    {
+        return 'POST /v2' . sprintf($this->pathOrder()[0], $slotId);
+    }
+
     /** @return array<int,string> */
     private function pathOrder(): array
     {
