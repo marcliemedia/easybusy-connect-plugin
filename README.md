@@ -136,6 +136,9 @@ Design rules worth keeping:
   the same specialist and hour, so `Slots::grouped()` keeps one entry per
   specialist and start time (smallest container that fits) and returns the day
   as a flat, sorted `times` list.
+- **No slot, no dead end.** When the clinic has no free slot at all, step 2 only invites the visitor onward if the Leads group is granted (an inquiry can actually be sent). Otherwise it explains the situation and links to **Settings → Booking form → Contact page URL**.
+- **Active is the brand colour, focus is not.** Selected cards, time chips, calendar days and the current step carry a solid gold fill with dark text (6.68:1); the keyboard focus ring is a dark 3 px outline, so the two states stay distinguishable. Gold is taken from `--secondary`, whose shade ramp stays in the gold hue — `--primary`'s ramp on some Core Framework sites is a different colour entirely.
+- **Vendor text is normalised.** Service and specialist names are typed by hand in EasyBusy and arrive with line breaks and trailing spaces; `Catalog::text()` collapses them before anything renders or is stored.
 - **Country is mandatory.** EasyBusy answers `400 must not be null` to an
   appointment request whose `patientInfo.address.countryCode` is missing, so
   the form always asks for a country and the server always sends one —

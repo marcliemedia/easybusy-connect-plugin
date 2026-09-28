@@ -48,10 +48,10 @@ final class Catalog
                 }
                 $services[] = [
                     'serviceId' => (int) $row['serviceId'],
-                    'category'  => isset($row['category']) && $row['category'] !== null ? (string) $row['category'] : '',
-                    'name'      => (string) ($row['name'] ?? ''),
+                    'category'  => isset($row['category']) && $row['category'] !== null ? self::text((string) $row['category']) : '',
+                    'name'      => self::text((string) ($row['name'] ?? '')),
                     'price'     => isset($row['price']) ? (float) $row['price'] : null,
-                    'currency'  => (string) ($row['currency'] ?? ''),
+                    'currency'  => self::text((string) ($row['currency'] ?? '')),
                     'doctors'   => self::doctorList($row['doctors'] ?? []),
                 ];
             }
@@ -214,8 +214,21 @@ final class Catalog
 
         return [
             'doctorId' => (int) $row['doctorId'],
-            'name'     => implode(' ', $parts),
-            'titles'   => implode(', ', $titles),
+            'name'     => self::text(implode(' ', $parts)),
+            'titles'   => self::text(implode(', ', $titles)),
         ];
+    }
+
+    /**
+     * The clinic types service and specialist names by hand in EasyBusy, so they
+     * arrive with line breaks, double spaces and trailing blanks ("KONZULTACIJE
+     * ESTETIKA \nDR. IVANKA KOVAČIĆ "). Collapsing them here keeps every screen,
+     * e-mail and stored row on one clean line.
+     */
+    private static function text(string $value): string
+    {
+        $value = str_replace("\u{00A0}", ' ', $value);
+
+        return trim((string) preg_replace('/\s+/u', ' ', $value));
     }
 }

@@ -96,6 +96,8 @@ final class Assets
             'messagePlaceholder' => __('Briefly describe your issue or the reason for the appointment.', 'easybusy-connect'),
             'preferredTime'    => __('Preferred time (optional)', 'easybusy-connect'),
             'noSlots'          => __('No free appointments in the selected period. Leave your details and the clinic will contact you.', 'easybusy-connect'),
+            'noSlotsClosed'    => __('There are no free appointments for this service yet. The clinic publishes its online schedule in its booking system — please get in touch and we will arrange a time with you.', 'easybusy-connect'),
+            'contactClinic'    => __('Contact the clinic', 'easybusy-connect'),
             'duration'         => __('%d min', 'easybusy-connect'),
             'firstName'        => __('First name', 'easybusy-connect'),
             'lastName'         => __('Last name', 'easybusy-connect'),

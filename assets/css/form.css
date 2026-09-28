@@ -13,17 +13,30 @@
  * would render the whole form at ~62 % (see common-issues #66).
  */
 .ebc-form {
-	--ebc-gold: var(--primary, #d4b368);
-	--ebc-gold-strong: var(--primary-d-1, #b8944a);
-	--ebc-gold-soft: var(--primary-10, rgba(212, 179, 104, 0.12));
+	/* The brand gold on this theme is Core Framework's --secondary
+	   (hsl(41 57% 63%) = #d6b469); --primary is a muted brown and, worse, its
+	   generated shades (--primary-d-1) are a leftover GREEN, which is what the
+	   selected state and the focus ring used to pick up. Everything gold now
+	   derives from --secondary, whose shades stay in the same hue.
+	   Measured against white: gold 1.98:1 (fill only, never a lone border),
+	   gold-strong 3.23:1 (borders, WCAG 1.4.11), gold-ink 5.29:1 (text),
+	   dark on gold 6.68:1 (text on a selected chip). */
+	--ebc-gold: var(--secondary, #d6b469);
+	--ebc-gold-strong: var(--secondary-d-1, #a68c54);
+	--ebc-gold-ink: var(--secondary-d-2, #7d6940);
+	--ebc-gold-soft: var(--secondary-20, rgba(214, 180, 105, 0.2));
 	--ebc-dark: var(--all-dark, #2b2420);
 	--ebc-dark-soft: var(--all-dark-5, rgba(43, 36, 32, 0.05));
 	--ebc-text: var(--text-title, #1c1917);
 	--ebc-text-muted: var(--text-body, #4b4b4b);
 	--ebc-surface: var(--light, #ffffff);
 	--ebc-surface-muted: var(--bg-surface, #f5f5f5);
-	--ebc-border: var(--all-dark-20, rgba(43, 36, 32, 0.2));
-	--ebc-border-strong: var(--all-dark-40, rgba(43, 36, 32, 0.45));
+	/* --all-dark-20 is only 1.46:1 on white — too faint to read as the edge of
+	   a control, so the idle border is mixed here instead of inherited. */
+	--ebc-border: rgba(55, 46, 41, 0.55);
+	--ebc-border: color-mix(in srgb, var(--ebc-dark) 55%, transparent);
+	--ebc-border-strong: rgba(55, 46, 41, 0.75);
+	--ebc-border-strong: color-mix(in srgb, var(--ebc-dark) 75%, transparent);
 	--ebc-error: #b42318;
 
 	--ebc-radius: var(--radius-s, 8px);
@@ -135,26 +148,30 @@
 	width: 24px;
 }
 
+/* The step you are on is gold, because gold is what "chosen" means everywhere
+   else in this form. Dark text on the gold fill measures 6.68:1. */
 .ebc-progress__item.is-current {
-	background: var(--ebc-dark);
-	border-color: var(--ebc-dark);
-	color: #ffffff;
+	background: var(--ebc-gold);
+	border-color: var(--ebc-gold-strong);
+	color: var(--ebc-dark);
 }
 
 .ebc-progress__item.is-current .ebc-progress__num {
-	background: var(--ebc-gold);
-	color: var(--ebc-dark);
+	background: var(--ebc-dark);
+	color: var(--ebc-gold);
 }
 
 .ebc-progress__item.is-done {
 	background: var(--ebc-gold-soft);
-	border-color: var(--ebc-gold);
+	border-color: var(--ebc-gold-strong);
 	color: var(--ebc-text);
 }
 
+/* White on gold-strong is only 3.23:1 at 13 px; the ink shade lifts it to
+   5.29:1. */
 .ebc-progress__item.is-done .ebc-progress__num {
-	background: var(--ebc-gold);
-	color: var(--ebc-dark);
+	background: var(--ebc-gold-ink);
+	color: #ffffff;
 }
 
 /* ---------- steps ---------- */
@@ -224,14 +241,18 @@
 }
 
 .ebc-card:hover {
-	border-color: var(--ebc-gold);
+	border-color: var(--ebc-gold-strong);
 }
 
-/* Active state is a gold outline — no fill, so the card keeps the page's
-   colour and the selection reads as a frame rather than a block. */
+/* Active state is a solid gold fill: a gold *outline* on white measures only
+   1.98:1, which disappears in a grid of a hundred chips. The fill carries the
+   brand colour, the darker gold border draws the edge at 3.23:1, and the text
+   on it sits at 6.68:1. */
 .ebc-card.is-selected {
-	border-color: var(--ebc-gold);
-	box-shadow: inset 0 0 0 1px var(--ebc-gold);
+	background: var(--ebc-gold);
+	border-color: var(--ebc-gold-strong);
+	box-shadow: inset 0 0 0 1px var(--ebc-gold-strong);
+	color: var(--ebc-dark);
 }
 
 .ebc-card__name {
@@ -240,7 +261,7 @@
 }
 
 .ebc-card__price {
-	color: var(--ebc-gold-strong);
+	color: var(--ebc-gold-ink);
 	font-size: 18px;
 	font-variant-numeric: tabular-nums;
 	font-weight: 700;
@@ -253,6 +274,14 @@
 	font-size: 15px;
 }
 
+/* Gold-on-gold would drop to 2.67:1, so both go dark once the card is chosen. */
+.ebc-card.is-selected .ebc-card__price,
+.ebc-card.is-selected .ebc-card__meta {
+	color: var(--ebc-dark);
+}
+
+/* Focus is deliberately NOT gold: gold now means "selected", and a dark ring
+   keeps 12.2:1 on white and 6.7:1 on a selected gold chip. */
 .ebc-card:focus-visible,
 .ebc-cal__day:focus-visible,
 .ebc-time:focus-visible,
@@ -261,7 +290,7 @@
 .ebc-textarea:focus-visible,
 .ebc-checkbox:focus-visible,
 .ebc-cal__nav:focus-visible {
-	outline: 3px solid var(--ebc-gold-strong);
+	outline: 3px solid var(--ebc-dark);
 	outline-offset: 2px;
 }
 
@@ -351,16 +380,19 @@
 
 .ebc-cal__day.is-free {
 	background: var(--ebc-gold-soft);
+	border-color: var(--ebc-gold-strong);
 }
 
 .ebc-cal__day.is-free:hover {
-	border-color: var(--ebc-gold);
+	background: var(--ebc-gold);
+	border-color: var(--ebc-gold-strong);
 }
 
 .ebc-cal__day.is-selected {
-	border-color: var(--ebc-gold);
-	box-shadow: inset 0 0 0 1px var(--ebc-gold);
-	color: var(--ebc-text);
+	background: var(--ebc-gold);
+	border-color: var(--ebc-dark);
+	box-shadow: inset 0 0 0 1px var(--ebc-gold-strong);
+	color: var(--ebc-dark);
 	font-weight: 700;
 }
 
@@ -377,14 +409,14 @@
 }
 
 .ebc-cal__dot {
-	background: var(--ebc-gold-strong);
+	background: var(--ebc-gold-ink);
 	border-radius: 50%;
 	height: 6px;
 	width: 6px;
 }
 
 .ebc-cal__day.is-selected .ebc-cal__dot {
-	background: var(--ebc-gold);
+	background: var(--ebc-dark);
 }
 
 .ebc-cal__legend {
@@ -410,13 +442,12 @@
 
 .ebc-cal__swatch--free {
 	background: var(--ebc-gold-soft);
-	border: 2px solid var(--ebc-gold);
+	border: 2px solid var(--ebc-gold-strong);
 }
 
 .ebc-cal__swatch--selected {
-	background: transparent;
-	border: 2px solid var(--ebc-gold);
-	box-shadow: inset 0 0 0 1px var(--ebc-gold);
+	background: var(--ebc-gold);
+	border: 2px solid var(--ebc-dark);
 }
 
 .ebc-schedule {
@@ -536,12 +567,14 @@
 }
 
 .ebc-time:hover {
-	border-color: var(--ebc-gold);
+	border-color: var(--ebc-gold-strong);
 }
 
 .ebc-time.is-selected {
-	border-color: var(--ebc-gold);
-	box-shadow: inset 0 0 0 1px var(--ebc-gold);
+	background: var(--ebc-gold);
+	border-color: var(--ebc-dark);
+	box-shadow: inset 0 0 0 1px var(--ebc-gold-strong);
+	color: var(--ebc-dark);
 }
 
 .ebc-time__value {
@@ -555,6 +588,11 @@
 .ebc-time__doctor {
 	color: var(--ebc-text-muted);
 	font-size: 14px;
+}
+
+.ebc-time.is-selected .ebc-time__meta,
+.ebc-time.is-selected .ebc-time__doctor {
+	color: var(--ebc-dark);
 }
 
 /* ---------- fields ---------- */
@@ -647,7 +685,7 @@
 }
 
 .ebc-consent a {
-	color: var(--ebc-gold-strong);
+	color: var(--ebc-gold-ink);
 	text-decoration: underline;
 }
 
@@ -676,8 +714,9 @@
 	gap: 10px;
 	justify-content: center;
 	background: var(--ebc-gold);
-	border: 2px solid var(--ebc-gold);
+	border: 2px solid var(--ebc-gold-strong);
 	border-radius: var(--radius-full, 999px);
+	text-decoration: none;
 	color: var(--ebc-dark);
 	cursor: pointer;
 	font-size: 18px;
@@ -714,6 +753,30 @@
 	background: var(--ebc-dark-soft);
 	border-color: var(--ebc-dark);
 	color: var(--ebc-text);
+}
+
+/* Anchor styled as the primary action (the "no slots" fallback links out). */
+.ebc-button--link:hover {
+	color: var(--ebc-gold);
+	text-decoration: none;
+}
+
+/* ---------- no free slots ---------- */
+
+.ebc-empty-slots {
+	background: var(--ebc-surface-muted);
+	border: 2px solid var(--ebc-border);
+	border-radius: var(--ebc-radius-lg);
+	display: grid;
+	gap: var(--ebc-gap-tight);
+	justify-items: start;
+	padding: var(--ebc-gap);
+}
+
+.ebc-empty-slots .ebc-empty {
+	color: var(--ebc-text);
+	font-size: 17px;
+	max-width: 62ch;
 }
 
 /* ---------- summary & result ---------- */

@@ -852,10 +852,31 @@
 		var step = this.state.steps[this.state.index] || {};
 
 		if (!days.length) {
+			// Without a free slot the form can only go on when an inquiry can
+			// actually be sent. The Leads group is separate from booking and can
+			// be denied, and then step 3 would collect a request the API refuses
+			// — so the visitor is told the truth and pointed at the clinic.
+			var canEnquire = !!this.state.config.leadFallback;
+			var contactUrl = this.state.config.contactUrl || '';
+
 			return el('section', { class: 'ebc-step ebc-step--schedule' }, [
 				el('h3', { class: 'ebc-step__title', text: step.title || text('chooseDay', 'Choose a day') }),
-				el('p', { class: 'ebc-empty', text: text('noSlots', 'No free appointments.') }),
+				el('div', { class: 'ebc-empty-slots' }, [
+					el('p', {
+						class: 'ebc-empty',
+						text: canEnquire
+							? text('noSlots', 'No free appointments.')
+							: text('noSlotsClosed', 'Online booking is not open for this service yet.')
+					}),
+					!canEnquire && contactUrl
+						? el('a', {
+							class: 'ebc-button ebc-button--link',
+							href: contactUrl
+						}, [el('span', { text: text('contactClinic', 'Contact the clinic') }), icon('arrow-right')])
+						: null
+				]),
 				this.renderNav({
+					next: canEnquire,
 					onNext: function () {
 						self.next();
 					}

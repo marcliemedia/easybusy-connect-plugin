@@ -303,3 +303,15 @@ msgstr "Traženo vrijeme: %s"
 
 msgid "Service: %s"
 msgstr "Usluga: %s"
+
+msgid "There are no free appointments for this service yet. The clinic publishes its online schedule in its booking system — please get in touch and we will arrange a time with you."
+msgstr "Za ovu uslugu trenutačno nema slobodnih termina za online rezervaciju. Klinika objavljuje raspored u svom sustavu naručivanja — javite nam se i dogovorit ćemo termin s vama."
+
+msgid "Contact the clinic"
+msgstr "Kontaktirajte kliniku"
+
+msgid "Contact page URL"
+msgstr "URL stranice za kontakt"
+
+msgid "Offered when the clinic has no free slot at all and no inquiry fallback is available, so the visitor is not walked into a request the API would refuse."
+msgstr "Prikazuje se kada klinika nema nijedan slobodan termin ni mogućnost slanja upita, kako posjetitelja ne bismo vodili u zahtjev koji API odbija."

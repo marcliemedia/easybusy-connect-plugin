@@ -274,6 +274,7 @@ final class SettingsPage
         Shell::cardOpen(__('Consent and confirmation', 'easybusy-connect'), __('Wording shown next to the consent checkbox, and where the patient lands afterwards.', 'easybusy-connect'));
         Shell::textarea('consent_text', __('Consent text', 'easybusy-connect'), (string) $settings['consent_text'], 3);
         Shell::text('consent_url', __('Consent link URL', 'easybusy-connect'), (string) $settings['consent_url']);
+        Shell::text('contact_url', __('Contact page URL', 'easybusy-connect'), (string) $settings['contact_url'], __('Offered when the clinic has no free slot at all and no inquiry fallback is available, so the visitor is not walked into a request the API would refuse.', 'easybusy-connect'));
         Shell::pages('thank_you_page', __('Thank-you page', 'easybusy-connect'), (int) $settings['thank_you_page'], __('Must contain [easybusy_thank_you]. A separate URL lets Google Ads / GA4 measure the conversion on a page view.', 'easybusy-connect'));
         Shell::cardClose();
 
@@ -488,6 +489,7 @@ final class SettingsPage
             'attachment_max_mb'    => max(1, min(50, (int) ($_POST['attachment_max_mb'] ?? 10))),
             'consent_text'         => sanitize_textarea_field((string) ($_POST['consent_text'] ?? '')),
             'consent_url'          => esc_url_raw((string) ($_POST['consent_url'] ?? '')),
+            'contact_url'          => esc_url_raw((string) ($_POST['contact_url'] ?? '')),
             'thank_you_page'       => max(0, (int) ($_POST['thank_you_page'] ?? 0)),
             'ff_forms'             => preg_replace('/[^0-9,\s]/', '', (string) ($_POST['ff_forms'] ?? '')) ?? '',
             'ui_locale'            => preg_replace('/[^a-zA-Z_]/', '', (string) ($_POST['ui_locale'] ?? '')) ?? '',

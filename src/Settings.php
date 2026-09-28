@@ -22,6 +22,9 @@ final class Settings
         'language_map'    => [],       // wp locale => easybusy code
         'consent_text'    => '',
         'consent_url'     => '',
+        // Where a visitor is sent when no appointment can be offered (no free
+        // slot and no inquiry fallback). Empty = plain message, no link.
+        'contact_url'     => '',
         'thank_you_page'  => 0,       // page holding [easybusy_thank_you]
         'require_oib'     => false,
         'collect_address' => false,
@@ -95,6 +98,14 @@ final class Settings
         $code = \EasyBusyConnect\Support\Countries::normalise((string) self::get('default_country', ''));
 
         return $code !== '' ? $code : \EasyBusyConnect\Support\Countries::FALLBACK;
+    }
+
+    /** Contact page offered when the form cannot take a request at all. */
+    public static function contactUrl(): string
+    {
+        $url = trim((string) self::get('contact_url', ''));
+
+        return $url === '' ? '' : esc_url_raw($url);
     }
 
     public static function get(string $key, mixed $fallback = null): mixed

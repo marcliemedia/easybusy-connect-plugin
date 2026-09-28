@@ -112,6 +112,12 @@ final class Controller
                 'gridMinutes'     => $this->capabilities->gridMinutes(),
                 'bookingEnabled'  => $this->definition->bookingEnabled(),
                 'doctorStep'      => $this->capabilities->supportsBookingByDoctor() && $this->definition->bookingEnabled(),
+                // When the clinic has no free slot at all, the form may only
+                // invite the visitor onward if an inquiry can actually be sent.
+                // The Leads group is denied on this key, so without this flag
+                // step 3 would collect a submission that the API refuses.
+                'leadFallback'    => $this->capabilities->grants('leads'),
+                'contactUrl'      => Settings::contactUrl(),
                 'dryRun'          => Settings::isDryRun(),
                 'requireOib'      => (bool) Settings::get('require_oib', false),
                 'collectAddress'  => (bool) Settings::get('collect_address', false),
