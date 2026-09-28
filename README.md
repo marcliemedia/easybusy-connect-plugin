@@ -127,9 +127,15 @@ languages/               Croatian translation
 Design rules worth keeping:
 
 - **Capability-driven.** Nothing assumes an endpoint exists; `Capabilities`
-  probes and features gate on the result. A group the probe cannot test
-  honestly (`POST /lead` would create a junk record) is demoted by
-  `Capabilities::deny()` the first time a live call returns 403.
+  probes and features gate on the result. Every probe uses a call that is
+  actually authorised — the Leads group is tested with an attachment upload to
+  lead id 0, which cannot create anything but still passes the access filter —
+  and a group can still be demoted later by `Capabilities::deny()` the first
+  time a live call returns 403.
+- **Overlapping slots are collapsed.** EasyBusy hands out several blocks for
+  the same specialist and hour, so `Slots::grouped()` keeps one entry per
+  specialist and start time (smallest container that fits) and returns the day
+  as a flat, sorted `times` list.
 - **Country is mandatory.** EasyBusy answers `400 must not be null` to an
   appointment request whose `patientInfo.address.countryCode` is missing, so
   the form always asks for a country and the server always sends one —

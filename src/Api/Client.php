@@ -183,6 +183,35 @@ final class Client
         return is_wp_error($response) ? $response : $response['status'];
     }
 
+    /**
+     * Status probe for an endpoint that only answers to a body (the Leads
+     * upload). Same transport as raw(), but 4xx comes back as a status instead
+     * of a WP_Error, because the status is the answer being looked for.
+     */
+    public function probeRawStatus(string $method, string $path, string $body, string $contentType): int|\WP_Error
+    {
+        $key = Settings::apiKey();
+        if ($key === '') {
+            return new \WP_Error('ebc_no_key', __('No EasyBusy API key is configured.', 'easybusy-connect'));
+        }
+
+        $response = wp_remote_request(Settings::apiBase() . '/v2' . $path, [
+            'method'  => $method,
+            'timeout' => self::TIMEOUT,
+            'headers' => ['X-API-KEY' => $key, 'Content-Type' => $contentType, 'Accept' => 'application/json'],
+            'body'    => $body,
+        ]);
+
+        if (is_wp_error($response)) {
+            return new \WP_Error('ebc_transport', $response->get_error_message());
+        }
+
+        $status = (int) wp_remote_retrieve_response_code($response);
+        Log::add('info', 'api call', ['method' => $method, 'path' => $path, 'status' => $status]);
+
+        return $status;
+    }
+
     private function httpError(int $status, mixed $decoded, string $raw): \WP_Error
     {
         $message = is_array($decoded) ? (string) ($decoded['message'] ?? '') : '';

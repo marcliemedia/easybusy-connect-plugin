@@ -12,10 +12,12 @@ use EasyBusyConnect\Support\Log;
  * widened scope lights up features without a code change, and a denied group
  * degrades instead of erroring.
  *
- * Probing must never create data. The Leads group is therefore probed with
- * GET /lead: the access filter runs before method matching, so 403 means the
- * group is denied while 405 means it is granted. POSTing an empty lead would
- * create a junk record, since every lead field is optional.
+ * Probing must never create data. The Leads group is therefore probed with an
+ * attachment upload against lead id 0: the access filter answers 403 for a key
+ * without the group, while a key that holds it gets 400/404 because that lead
+ * does not exist. GET /lead is useless as a probe — it answers 405 for a denied
+ * key too — and POSTing an empty lead would create a junk record, since every
+ * lead field is optional.
  */
 final class Capabilities
 {
@@ -105,15 +107,27 @@ final class Capabilities
         $map['probes']['GET /simple-booking/bookable-services'] = $this->describe($services);
         $map['groups']['simple_booking'] = !is_wp_error($services);
 
-        // Optimistic by necessity: the only honest test of POST /lead is a POST
-        // /lead, and every lead field is optional, so a probe would create a
-        // junk record in the clinic's CRM. GET /lead answering 405 instead of
-        // 403 means the *path* exists; a real POST that comes back 403 demotes
-        // the group through deny() (verified live 2026-09-18 — this key is
-        // denied on POST while GET still answers 405).
-        $leadStatus = $this->client->probeStatus('GET', '/lead');
-        $map['probes']['GET /lead'] = is_wp_error($leadStatus) ? $leadStatus->get_error_code() : $leadStatus;
-        $map['groups']['leads'] = $leadStatus === 405;
+        // The only honest test of the Leads group is a write to it, so the
+        // probe writes to a lead that cannot exist: id 0 never resolves, so a
+        // granted key answers 400/404 without creating anything, while a denied
+        // key is stopped by the access filter with 403. GET /lead answers 405
+        // for both and must not be used (it reported this denied key as granted
+        // until 2026-09-28). A live 403 on a real call still demotes the group
+        // through deny().
+        $boundary = 'ebc' . bin2hex(random_bytes(12));
+        $probeBody = "--{$boundary}\r\n"
+            . 'Content-Disposition: form-data; name="file"; filename="probe.txt"' . "\r\n"
+            . "Content-Type: text/plain\r\n\r\n"
+            . "ebc-capability-probe\r\n"
+            . "--{$boundary}--\r\n";
+        $leadStatus = $this->client->probeRawStatus(
+            'POST',
+            '/lead/0/upload',
+            $probeBody,
+            'multipart/form-data; boundary=' . $boundary
+        );
+        $map['probes']['POST /lead/{id}/upload'] = is_wp_error($leadStatus) ? $leadStatus->get_error_code() : $leadStatus;
+        $map['groups']['leads'] = is_int($leadStatus) && $leadStatus !== 403 && $leadStatus !== 401;
 
         $priceList = $this->client->get('/price-list');
         $map['probes']['GET /price-list'] = $this->describe($priceList);
@@ -147,12 +161,11 @@ final class Capabilities
     }
 
     /**
-     * Records a denial the site actually hit, because probing cannot always see
-     * one: GET /lead answers 405 (the vendor authorises after binding the
-     * request body), so the Leads group looks granted until a real POST /lead
-     * comes back 403 — which is exactly what happens on this key. Without this,
-     * the form would keep offering attachments and keep falling back to a lead
-     * that can never be created.
+     * Records a denial the site actually hit. The probe writes to lead id 0 and
+     * believes the answer, but a group can still be revoked between two probes,
+     * so a live 403 demotes it immediately — otherwise the form would keep
+     * offering attachments and keep falling back to a lead that can never be
+     * created.
      */
     public function deny(string $group, string $reason): void
     {

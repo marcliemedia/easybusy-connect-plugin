@@ -137,19 +137,18 @@ final class Commands
 
         foreach ($grouped['days'] as $day) {
             \WP_CLI::log($day['label']);
-            foreach ($day['slots'] as $slot) {
+            foreach ($day['times'] as $time) {
                 \WP_CLI::log(sprintf(
-                    '  slot %-9d %s  %d min  %s  starts: %s',
-                    $slot['slotId'],
-                    $slot['time'],
-                    $slot['durationMin'],
-                    $slot['doctorName'] !== '' ? $slot['doctorName'] : '-',
-                    implode(', ', array_column($slot['startOptions'], 'label'))
+                    '  %s  slot %-9d %d min  %s',
+                    $time['label'],
+                    $time['slotId'],
+                    $time['durationMin'],
+                    $time['doctorName'] !== '' ? $time['doctorName'] : '-'
                 ));
             }
         }
 
-        \WP_CLI::success(sprintf('%d slots.', $grouped['total']));
+        \WP_CLI::success(sprintf('%d free times.', $grouped['total']));
     }
 
     public function purge(): void

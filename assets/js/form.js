@@ -419,15 +419,14 @@
 			});
 	};
 
-	/** @param {{slots: Array}} day */
+	/** @param {{times: Array}} day */
 	Form.prototype.selectFirstOf = function (day) {
-		var slot = day.slots[0];
-		if (!slot) {
+		var time = day.times[0];
+		if (!time) {
 			return null;
 		}
-		var option = slot.startOptions[0];
 
-		return this.chooseSlot(slot.slotId, option ? option.value : '');
+		return this.chooseSlot(time.slotId, time.value);
 	};
 
 	/** Picking a day immediately preselects its first free time. */
@@ -868,18 +867,16 @@
 			return day.date === self.state.selectedDay;
 		})[0] || days[0];
 
-		// One flat list of pickable start times for the selected day.
-		var options = [];
-		selected.slots.forEach(function (slot) {
-			slot.startOptions.forEach(function (option) {
-				options.push({
-					slotId: slot.slotId,
-					value: option.value,
-					label: option.label,
-					durationMin: slot.durationMin,
-					doctorName: slot.doctorName || ''
-				});
-			});
+		// One flat list of pickable start times for the selected day; the server
+		// already collapsed the overlapping blocks EasyBusy returns.
+		var options = selected.times.map(function (time) {
+			return {
+				slotId: time.slotId,
+				value: time.value,
+				label: time.label,
+				durationMin: time.durationMin,
+				doctorName: time.doctorName || ''
+			};
 		});
 
 		// Duration and doctor are usually identical for a whole day; printing
@@ -1084,9 +1081,7 @@
 					disabled: entry ? null : 'disabled',
 					'aria-pressed': isSelected ? 'true' : 'false',
 					'aria-label': entry
-						? iso + ' — ' + sprintf(text('slotsAvailable', '%d free times'), [entry.slots.reduce(function (total, slot) {
-							return total + slot.startOptions.length;
-						}, 0)])
+						? iso + ' — ' + sprintf(text('slotsAvailable', '%d free times'), [entry.times.length])
 						: iso,
 					onclick: entry
 						? (function (date) {

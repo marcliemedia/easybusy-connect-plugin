@@ -171,8 +171,8 @@ final class SettingsPage
         echo '</div>';
 
         // A group the probe reported as reachable but a real call refused. Without
-        // this the screen contradicts itself: "GET /lead → 405" next to a grey
-        // leads chip.
+        // this the screen contradicts itself: a green leads chip next to a form
+        // that refuses attachments.
         foreach ((array) ($map['denied'] ?? []) as $group => $denial) {
             printf(
                 '<p class="ebc-help">%s</p>',

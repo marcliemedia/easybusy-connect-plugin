@@ -85,10 +85,17 @@ final class Slots
     }
 
     /**
-     * Step 3 view model: slots grouped by day, each with the start times a
-     * patient may actually pick. The offered duration is requiredSlotSize —
-     * slotSize is the container, and a 120-minute slot can hold a 30-minute
-     * appointment plus a remainder the clinic re-splits.
+     * Step 2 view model: one entry per day, holding the start times a patient
+     * may actually pick. The offered duration is requiredSlotSize — slotSize is
+     * the container, and a 120-minute slot can hold a 30-minute appointment
+     * plus a remainder the clinic re-splits.
+     *
+     * EasyBusy hands out overlapping blocks for the same specialist (a 90-minute
+     * and a 9-hour block can both start at 08:00), so the raw start options
+     * repeat the same clock time several times with different slot ids. Only one
+     * of them is a distinct appointment, so identical times are collapsed per
+     * specialist, keeping the smallest container that fits — the tighter block
+     * leaves the long one free for a longer treatment.
      *
      * @return array{days:array<int,array<string,mixed>>,total:int}|\WP_Error
      */
@@ -100,7 +107,7 @@ final class Slots
         }
 
         $grid = $this->capabilities->gridMinutes();
-        $byDate = [];
+        $picked = [];
 
         foreach ($slots as $slot) {
             $start = Tz::parse($slot['start']);
@@ -110,20 +117,46 @@ final class Slots
             }
 
             $required = $slot['requiredSlotSize'] > 0 ? $slot['requiredSlotSize'] : $slot['slotSize'];
-            $byDate[$slot['date']] ??= ['date' => $slot['date'], 'label' => $start->format('D, d.m.Y'), 'slots' => []];
-            $byDate[$slot['date']]['slots'][] = [
-                'slotId'       => $slot['slotId'],
-                'time'         => $slot['time'],
-                'durationMin'  => $required,
-                'doctorId'     => $slot['doctorId'],
-                'doctorName'   => $slot['doctorName'],
-                'startOptions' => Tz::startOptions($start, $end, $required, $grid),
-            ];
+            $size = $slot['slotSize'] > 0 ? $slot['slotSize'] : $required;
+
+            foreach (Tz::startOptions($start, $end, $required, $grid) as $option) {
+                $key = $slot['date'] . '|' . (int) $slot['doctorId'] . '|' . $option['value'];
+                $held = $picked[$key] ?? null;
+                if ($held !== null && ($held['size'] < $size
+                    || ($held['size'] === $size && $held['slotId'] <= $slot['slotId']))) {
+                    continue;
+                }
+
+                $picked[$key] = [
+                    'date'        => $slot['date'],
+                    'dayLabel'    => $start->format('D, d.m.Y'),
+                    'value'       => $option['value'],
+                    'label'       => $option['label'],
+                    'slotId'      => $slot['slotId'],
+                    'durationMin' => $required,
+                    'doctorId'    => $slot['doctorId'],
+                    'doctorName'  => $slot['doctorName'],
+                    'size'        => $size,
+                ];
+            }
+        }
+
+        $byDate = [];
+        foreach ($picked as $time) {
+            $date = $time['date'];
+            $byDate[$date] ??= ['date' => $date, 'label' => $time['dayLabel'], 'times' => []];
+            unset($time['date'], $time['dayLabel'], $time['size']);
+            $byDate[$date]['times'][] = $time;
         }
 
         ksort($byDate);
+        foreach ($byDate as &$day) {
+            usort($day['times'], static fn (array $a, array $b): int
+                => [$a['value'], $a['doctorName']] <=> [$b['value'], $b['doctorName']]);
+        }
+        unset($day);
 
-        return ['days' => array_values($byDate), 'total' => count($slots)];
+        return ['days' => array_values($byDate), 'total' => count($picked)];
     }
 
     /**
