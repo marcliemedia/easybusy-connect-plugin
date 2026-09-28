@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EasyBusyConnect\Api;
 
 use EasyBusyConnect\Settings;
+use EasyBusyConnect\Support\Text;
 use EasyBusyConnect\Support\Tz;
 
 /**
@@ -69,7 +70,7 @@ final class Slots
                 'requiredSlotSize' => (int) ($row['requiredSlotSize'] ?? 0),
                 'serviceId'        => (int) ($service['serviceId'] ?? $serviceId),
                 'doctorId'         => isset($doctor['doctorId']) ? (int) $doctor['doctorId'] : null,
-                'doctorName'       => trim(sprintf(
+                'doctorName'       => Text::person(sprintf(
                     '%s %s %s',
                     (string) ($doctor['prefix'] ?? ''),
                     (string) ($doctor['firstName'] ?? ''),

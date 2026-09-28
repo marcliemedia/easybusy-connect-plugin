@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace EasyBusyConnect\Api;
 
 use EasyBusyConnect\Support\Log;
+use EasyBusyConnect\Support\Text;
 
 /**
  * Bookable services and doctors. `bookable-services` already carries price and
- * currency, so step 1 of the form shows prices even though the price-list group
- * is denied to the current key.
+ * currency, so step 1 shows prices without touching the price-list group, and
+ * every label passes through Support\Text on the way out because the clinic
+ * types them by hand (SHOUTED names, stray line breaks, trailing spaces).
  *
  * Every read goes to EasyBusy live. The clinic enables a service or assigns a
  * specialist in their system and expects the next visitor to see it, so a
@@ -48,10 +50,10 @@ final class Catalog
                 }
                 $services[] = [
                     'serviceId' => (int) $row['serviceId'],
-                    'category'  => isset($row['category']) && $row['category'] !== null ? self::text((string) $row['category']) : '',
-                    'name'      => self::text((string) ($row['name'] ?? '')),
+                    'category'  => isset($row['category']) && $row['category'] !== null ? Text::label((string) $row['category']) : '',
+                    'name'      => Text::label((string) ($row['name'] ?? '')),
                     'price'     => isset($row['price']) ? (float) $row['price'] : null,
-                    'currency'  => self::text((string) ($row['currency'] ?? '')),
+                    'currency'  => Text::clean((string) ($row['currency'] ?? '')),
                     'doctors'   => self::doctorList($row['doctors'] ?? []),
                 ];
             }
@@ -214,21 +216,8 @@ final class Catalog
 
         return [
             'doctorId' => (int) $row['doctorId'],
-            'name'     => self::text(implode(' ', $parts)),
-            'titles'   => self::text(implode(', ', $titles)),
+            'name'     => Text::person(implode(' ', $parts)),
+            'titles'   => Text::titles(implode(', ', $titles)),
         ];
-    }
-
-    /**
-     * The clinic types service and specialist names by hand in EasyBusy, so they
-     * arrive with line breaks, double spaces and trailing blanks ("KONZULTACIJE
-     * ESTETIKA \nDR. IVANKA KOVAČIĆ "). Collapsing them here keeps every screen,
-     * e-mail and stored row on one clean line.
-     */
-    private static function text(string $value): string
-    {
-        $value = str_replace("\u{00A0}", ' ', $value);
-
-        return trim((string) preg_replace('/\s+/u', ' ', $value));
     }
 }

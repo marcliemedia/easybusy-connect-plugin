@@ -14,17 +14,17 @@
  */
 .ebc-form {
 	/* The brand gold on this theme is Core Framework's --secondary
-	   (hsl(41 57% 63%) = #d6b469); --primary is a muted brown and, worse, its
-	   generated shades (--primary-d-1) are a leftover GREEN, which is what the
-	   selected state and the focus ring used to pick up. Everything gold now
-	   derives from --secondary, whose shades stay in the same hue.
-	   Measured against white: gold 1.98:1 (fill only, never a lone border),
-	   gold-strong 3.23:1 (borders, WCAG 1.4.11), gold-ink 5.29:1 (text),
-	   dark on gold 6.68:1 (text on a selected chip). */
+	   (hsl(41 57% 63%) = #d6b469); --primary is the brand brown used by the
+	   page's own buttons, and its generated shades (--primary-d-1) are a
+	   leftover GREEN, so no shade of --primary is ever used here.
+	   Measured against white: gold 1.98:1 (accent only), gold-strong 3.23:1
+	   (the colour every selection/focus outline is drawn in, WCAG 1.4.11),
+	   gold-ink 5.29:1 (gold text), white on brown 5.84:1 (button label). */
 	--ebc-gold: var(--secondary, #d6b469);
 	--ebc-gold-strong: var(--secondary-d-1, #a68c54);
 	--ebc-gold-ink: var(--secondary-d-2, #7d6940);
 	--ebc-gold-soft: var(--secondary-20, rgba(214, 180, 105, 0.2));
+	--ebc-brown: var(--primary, #726255);
 	--ebc-dark: var(--all-dark, #2b2420);
 	--ebc-dark-soft: var(--all-dark-5, rgba(43, 36, 32, 0.05));
 	--ebc-text: var(--text-title, #1c1917);
@@ -148,21 +148,23 @@
 	width: 24px;
 }
 
-/* The step you are on is gold, because gold is what "chosen" means everywhere
-   else in this form. Dark text on the gold fill measures 6.68:1. */
+/* Selection and focus are drawn in gold; nothing is filled with it. The step
+   you are on gets the gold frame plus a gold number badge (dark text on gold
+   = 6.68:1), the steps behind you keep a quieter gold frame. */
 .ebc-progress__item.is-current {
-	background: var(--ebc-gold);
+	background: var(--ebc-surface);
 	border-color: var(--ebc-gold-strong);
-	color: var(--ebc-dark);
+	box-shadow: inset 0 0 0 2px var(--ebc-gold);
+	color: var(--ebc-text);
 }
 
 .ebc-progress__item.is-current .ebc-progress__num {
-	background: var(--ebc-dark);
-	color: var(--ebc-gold);
+	background: var(--ebc-gold);
+	color: var(--ebc-dark);
 }
 
 .ebc-progress__item.is-done {
-	background: var(--ebc-gold-soft);
+	background: var(--ebc-surface);
 	border-color: var(--ebc-gold-strong);
 	color: var(--ebc-text);
 }
@@ -244,20 +246,24 @@
 	border-color: var(--ebc-gold-strong);
 }
 
-/* Active state is a solid gold fill: a gold *outline* on white measures only
-   1.98:1, which disappears in a grid of a hundred chips. The fill carries the
-   brand colour, the darker gold border draws the edge at 3.23:1, and the text
-   on it sits at 6.68:1. */
+/* Selected = a gold frame, not a gold fill: the card keeps the page's colour
+   and the selection reads as a frame. The frame is drawn in gold-strong
+   (3.23:1 on white, WCAG 1.4.11 for a non-text indicator) with a 2 px inner
+   ring in the lighter brand gold, which is what makes it obvious across a
+   dense grid. */
 .ebc-card.is-selected {
-	background: var(--ebc-gold);
 	border-color: var(--ebc-gold-strong);
-	box-shadow: inset 0 0 0 1px var(--ebc-gold-strong);
-	color: var(--ebc-dark);
+	box-shadow: inset 0 0 0 2px var(--ebc-gold);
+	font-weight: 700;
 }
 
 .ebc-card__name {
 	font-size: 18px;
 	font-weight: 600;
+}
+
+.ebc-card.is-selected .ebc-card__name {
+	font-weight: 700;
 }
 
 .ebc-card__price {
@@ -274,23 +280,22 @@
 	font-size: 15px;
 }
 
-/* Gold-on-gold would drop to 2.67:1, so both go dark once the card is chosen. */
-.ebc-card.is-selected .ebc-card__price,
-.ebc-card.is-selected .ebc-card__meta {
-	color: var(--ebc-dark);
-}
-
-/* Focus is deliberately NOT gold: gold now means "selected", and a dark ring
-   keeps 12.2:1 on white and 6.7:1 on a selected gold chip. */
-.ebc-card:focus-visible,
-.ebc-cal__day:focus-visible,
-.ebc-time:focus-visible,
-.ebc-button:focus-visible,
-.ebc-input:focus-visible,
-.ebc-textarea:focus-visible,
-.ebc-checkbox:focus-visible,
-.ebc-cal__nav:focus-visible {
-	outline: 3px solid var(--ebc-dark);
+/* Focus is the same gold, drawn outside the control with an offset, so the
+   keyboard ring and the selected frame never sit on the same pixels.
+   Bricks ships `body.bricks-is-frontend :focus-visible {outline:1px solid
+   var(--primary)}` (specificity 0,2,1), which used to win over a bare
+   `.ebc-card:focus-visible` (0,2,0) and drew a 1 px brown hairline instead —
+   hence the `.ebc-form` prefix on every one of these. */
+.ebc-form .ebc-card:focus-visible,
+.ebc-form .ebc-cal__day:focus-visible,
+.ebc-form .ebc-time:focus-visible,
+.ebc-form .ebc-button:focus-visible,
+.ebc-form .ebc-input:focus-visible,
+.ebc-form .ebc-textarea:focus-visible,
+.ebc-form .ebc-checkbox:focus-visible,
+.ebc-form .ebc-select:focus-visible,
+.ebc-form .ebc-cal__nav:focus-visible {
+	outline: 3px solid var(--ebc-gold-strong);
 	outline-offset: 2px;
 }
 
@@ -378,21 +383,23 @@
 	transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
+/* A free day is only tinted; the gold frame is reserved for the chosen one,
+   otherwise the whole month looks selected. */
 .ebc-cal__day.is-free {
 	background: var(--ebc-gold-soft);
-	border-color: var(--ebc-gold-strong);
+	border-color: transparent;
 }
 
 .ebc-cal__day.is-free:hover {
-	background: var(--ebc-gold);
-	border-color: var(--ebc-gold-strong);
+	border-color: var(--ebc-gold-ink);
 }
 
+/* The free days carry the faint gold tint; the chosen one is framed in gold. */
 .ebc-cal__day.is-selected {
-	background: var(--ebc-gold);
-	border-color: var(--ebc-dark);
-	box-shadow: inset 0 0 0 1px var(--ebc-gold-strong);
-	color: var(--ebc-dark);
+	background: var(--ebc-gold-soft);
+	border-color: var(--ebc-gold-strong);
+	box-shadow: inset 0 0 0 2px var(--ebc-gold);
+	color: var(--ebc-text);
 	font-weight: 700;
 }
 
@@ -416,7 +423,7 @@
 }
 
 .ebc-cal__day.is-selected .ebc-cal__dot {
-	background: var(--ebc-dark);
+	background: var(--ebc-gold-ink);
 }
 
 .ebc-cal__legend {
@@ -446,8 +453,9 @@
 }
 
 .ebc-cal__swatch--selected {
-	background: var(--ebc-gold);
-	border: 2px solid var(--ebc-dark);
+	background: var(--ebc-gold-soft);
+	border: 2px solid var(--ebc-gold-strong);
+	box-shadow: inset 0 0 0 2px var(--ebc-gold);
 }
 
 .ebc-schedule {
@@ -571,10 +579,10 @@
 }
 
 .ebc-time.is-selected {
-	background: var(--ebc-gold);
-	border-color: var(--ebc-dark);
-	box-shadow: inset 0 0 0 1px var(--ebc-gold-strong);
-	color: var(--ebc-dark);
+	background: var(--ebc-gold-soft);
+	border-color: var(--ebc-gold-strong);
+	box-shadow: inset 0 0 0 2px var(--ebc-gold);
+	color: var(--ebc-text);
 }
 
 .ebc-time__value {
@@ -588,11 +596,6 @@
 .ebc-time__doctor {
 	color: var(--ebc-text-muted);
 	font-size: 14px;
-}
-
-.ebc-time.is-selected .ebc-time__meta,
-.ebc-time.is-selected .ebc-time__doctor {
-	color: var(--ebc-dark);
 }
 
 /* ---------- fields ---------- */
@@ -708,16 +711,18 @@
 	margin-top: var(--ebc-gap-tight);
 }
 
+/* The page's own buttons are brand brown, so the form's are too. White on
+   #726255 is 5.84:1; the dark text this used to carry was 2.27:1. */
 .ebc-button {
 	align-items: center;
 	display: inline-flex;
 	gap: 10px;
 	justify-content: center;
-	background: var(--ebc-gold);
-	border: 2px solid var(--ebc-gold-strong);
+	background: var(--ebc-brown);
+	border: 2px solid var(--ebc-brown);
 	border-radius: var(--radius-full, 999px);
 	text-decoration: none;
-	color: var(--ebc-dark);
+	color: #ffffff;
 	cursor: pointer;
 	font-size: 18px;
 	font-weight: 700;
@@ -729,7 +734,7 @@
 .ebc-button:hover {
 	background: var(--ebc-dark);
 	border-color: var(--ebc-dark);
-	color: var(--ebc-gold);
+	color: #ffffff;
 }
 
 .ebc-button[disabled] {
@@ -756,8 +761,9 @@
 }
 
 /* Anchor styled as the primary action (the "no slots" fallback links out). */
+.ebc-button--link,
 .ebc-button--link:hover {
-	color: var(--ebc-gold);
+	color: #ffffff;
 	text-decoration: none;
 }
 
