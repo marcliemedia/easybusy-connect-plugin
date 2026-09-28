@@ -17,20 +17,21 @@
 	   Gold (Core Framework's --secondary, #d6b469) is the brand accent: prices,
 	   the tint on days that have appointments, section rules. --primary is the
 	   brand brown the page's own buttons use; its generated shades
-	   (--primary-d-1) are a leftover GREEN, so no shade of it is used here.
-	   Blue is the interaction colour — hover, selected, focus — because a
-	   state has to be told apart from the brand at a glance, and this theme
-	   uses no blue anywhere else.
-	   Measured against white: blue 5.75:1 (frames and focus rings, well over
-	   the 3:1 in WCAG 1.4.11), gold-ink 5.29:1 (gold text), white on brown
-	   5.84:1 (button label). */
+	   (--primary-d-1) are a leftover green of the wrong tone, so no shade of it
+	   is used here.
+	   Green is the interaction colour — hover, selected, focus, progress —
+	   because a state has to be told apart from the brand at a glance. It is
+	   only ever drawn as a line: a border, a ring or a connector, never a panel
+	   fill.
+	   Measured against white: green 6.43:1 (frames, focus rings, white text on
+	   a progress dot), gold-ink 5.29:1 (gold text), white on brown 5.84:1
+	   (button label). */
 	--ebc-gold: var(--secondary, #d6b469);
 	--ebc-gold-strong: var(--secondary-d-1, #a68c54);
 	--ebc-gold-ink: var(--secondary-d-2, #7d6940);
 	--ebc-gold-soft: var(--secondary-20, rgba(214, 180, 105, 0.2));
-	--ebc-blue: #1565c0;
-	--ebc-blue-soft: rgba(21, 101, 192, 0.28);
-	--ebc-blue-tint: rgba(21, 101, 192, 0.07);
+	--ebc-green: #276c2b;
+	--ebc-green-soft: rgba(39, 108, 43, 0.3);
 	--ebc-brown: var(--primary, #726255);
 	--ebc-dark: var(--all-dark, #2b2420);
 	--ebc-dark-soft: var(--all-dark-5, rgba(43, 36, 32, 0.05));
@@ -120,10 +121,14 @@
 	margin-bottom: var(--ebc-gap-tight);
 }
 
+/* A timeline, not a row of buttons: the pill outline used to make every step
+   look clickable. Each step is a numbered dot joined by a connector line;
+   nothing here has a background panel or a rounded border. */
 .ebc-progress__list {
+	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--ebc-gap-tight);
+	gap: 8px;
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -131,54 +136,83 @@
 
 .ebc-progress__item {
 	align-items: center;
-	border: 2px solid var(--ebc-border);
-	border-radius: var(--radius-full, 999px);
+	background: none;
+	border: 0;
 	color: var(--ebc-text-muted);
 	display: flex;
 	font-size: 15px;
 	font-weight: 600;
 	gap: 8px;
-	padding: 8px 16px;
+	padding: 0;
+}
+
+/* The connector belongs to the step it starts from, so it turns green as soon
+   as that step is behind the visitor. */
+.ebc-progress__item:not(:last-child)::after {
+	background: var(--ebc-border);
+	border-radius: 2px;
+	content: "";
+	display: block;
+	height: 2px;
+	margin-left: 4px;
+	width: clamp(18px, 5vw, 56px);
+}
+
+.ebc-progress__item.is-done::after {
+	background: var(--ebc-green);
 }
 
 .ebc-progress__num {
 	align-items: center;
-	background: var(--ebc-border);
+	background: var(--ebc-surface);
+	border: 2px solid var(--ebc-border);
 	border-radius: 50%;
-	color: var(--ebc-dark);
+	color: var(--ebc-text);
 	display: inline-flex;
 	flex: 0 0 auto;
-	font-size: 13px;
+	font-size: 14px;
 	font-weight: 700;
-	height: 24px;
+	height: 28px;
 	justify-content: center;
-	width: 24px;
+	width: 28px;
 }
 
-/* Selection is drawn in blue, never filled with it. The step you are on gets
-   the blue frame and a blue number badge (white on blue = 5.75:1); the steps
-   behind you keep the frame without the halo. */
+/* Upcoming: dark number in an outlined dot (12.2:1 text, 3.3:1 outline).
+   Current: filled green dot with a halo ring (white on green = 6.43:1).
+   Done: filled green dot carrying a check mark instead of the number. */
 .ebc-progress__item.is-current {
-	background: var(--ebc-surface);
-	border-color: var(--ebc-blue);
-	box-shadow: inset 0 0 0 2px var(--ebc-blue-soft);
 	color: var(--ebc-text);
+	font-weight: 700;
 }
 
 .ebc-progress__item.is-current .ebc-progress__num {
-	background: var(--ebc-blue);
+	background: var(--ebc-green);
+	border-color: var(--ebc-green);
+	box-shadow: 0 0 0 4px var(--ebc-green-soft);
 	color: #ffffff;
 }
 
 .ebc-progress__item.is-done {
-	background: var(--ebc-surface);
-	border-color: var(--ebc-blue);
 	color: var(--ebc-text);
 }
 
 .ebc-progress__item.is-done .ebc-progress__num {
-	background: var(--ebc-blue-soft);
-	color: var(--ebc-dark);
+	background: var(--ebc-green);
+	border-color: var(--ebc-green);
+	color: transparent;
+	position: relative;
+}
+
+.ebc-progress__item.is-done .ebc-progress__num::after {
+	color: #ffffff;
+	content: "✓";
+	font-size: 15px;
+	left: 0;
+	line-height: 24px;
+	position: absolute;
+	right: 0;
+	text-align: center;
+	top: 0;
 }
 
 /* ---------- steps ---------- */
@@ -248,17 +282,16 @@
 }
 
 .ebc-card:hover {
-	border-color: var(--ebc-blue);
+	border-color: var(--ebc-green);
 }
 
-/* Selected = a blue frame, not a fill: the card keeps the page's colour and
-   the choice reads as a frame. Blue is 5.75:1 on white, so a 2 px border plus
-   a soft 2 px halo is unmistakable across a dense grid — and it cannot be
+/* Selected = a green frame, no fill at all: the card keeps the page's colour
+   and the choice reads as a frame. Green is 6.43:1 on white, so a 2 px border
+   plus a soft 2 px halo is unmistakable across a dense grid — and it cannot be
    confused with the gold the brand uses for prices and availability. */
 .ebc-card.is-selected {
-	background: var(--ebc-blue-tint);
-	border-color: var(--ebc-blue);
-	box-shadow: inset 0 0 0 2px var(--ebc-blue-soft);
+	border-color: var(--ebc-green);
+	box-shadow: inset 0 0 0 2px var(--ebc-green-soft);
 	font-weight: 700;
 }
 
@@ -279,19 +312,13 @@
 	white-space: nowrap;
 }
 
-/* The gold price sits at 4.25:1 on the blue tint of a selected card, so it
-   drops one shade there (8.2:1) instead of losing the gold entirely. */
-.ebc-card.is-selected .ebc-card__price {
-	color: var(--secondary-d-3, #53472d);
-}
-
 .ebc-card__meta {
 	color: var(--ebc-text-muted);
 	flex-basis: 100%;
 	font-size: 15px;
 }
 
-/* Focus is the same blue, drawn outside the control with an offset, so the
+/* Focus is the same green, drawn outside the control with an offset, so the
    keyboard ring and the selected frame never sit on the same pixels.
    Bricks ships `body.bricks-is-frontend :focus-visible {outline:1px solid
    var(--primary)}` (specificity 0,2,1), which used to win over a bare
@@ -306,7 +333,7 @@
 .ebc-form .ebc-checkbox:focus-visible,
 .ebc-form .ebc-select:focus-visible,
 .ebc-form .ebc-cal__nav:focus-visible {
-	outline: 3px solid var(--ebc-blue);
+	outline: 3px solid var(--ebc-green);
 	outline-offset: 2px;
 }
 
@@ -394,7 +421,7 @@
 	transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Gold tint = this day has appointments (brand accent). Blue frame = this is
+/* Gold tint = this day has appointments (brand accent). Green frame = this is
    the day you picked (interaction state). */
 .ebc-cal__day.is-free {
 	background: var(--ebc-gold-soft);
@@ -402,13 +429,13 @@
 }
 
 .ebc-cal__day.is-free:hover {
-	border-color: var(--ebc-blue);
+	border-color: var(--ebc-green);
 }
 
 .ebc-cal__day.is-selected {
 	background: var(--ebc-gold-soft);
-	border-color: var(--ebc-blue);
-	box-shadow: inset 0 0 0 2px var(--ebc-blue-soft);
+	border-color: var(--ebc-green);
+	box-shadow: inset 0 0 0 2px var(--ebc-green-soft);
 	color: var(--ebc-text);
 	font-weight: 700;
 }
@@ -464,8 +491,8 @@
 
 .ebc-cal__swatch--selected {
 	background: var(--ebc-gold-soft);
-	border: 2px solid var(--ebc-blue);
-	box-shadow: inset 0 0 0 2px var(--ebc-blue-soft);
+	border: 2px solid var(--ebc-green);
+	box-shadow: inset 0 0 0 2px var(--ebc-green-soft);
 }
 
 .ebc-schedule {
@@ -585,13 +612,12 @@
 }
 
 .ebc-time:hover {
-	border-color: var(--ebc-blue);
+	border-color: var(--ebc-green);
 }
 
 .ebc-time.is-selected {
-	background: var(--ebc-blue-tint);
-	border-color: var(--ebc-blue);
-	box-shadow: inset 0 0 0 2px var(--ebc-blue-soft);
+	border-color: var(--ebc-green);
+	box-shadow: inset 0 0 0 2px var(--ebc-green-soft);
 	color: var(--ebc-text);
 }
 
@@ -644,7 +670,7 @@
 
 .ebc-input:hover,
 .ebc-textarea:hover {
-	border-color: var(--ebc-blue);
+	border-color: var(--ebc-green);
 }
 
 .ebc-textarea {
@@ -691,14 +717,14 @@
 }
 
 .ebc-checkbox {
-	accent-color: var(--ebc-blue);
+	accent-color: var(--ebc-green);
 	height: 24px;
 	margin: 0;
 	width: 24px;
 }
 
 .ebc-consent a {
-	color: var(--ebc-blue);
+	color: var(--ebc-green);
 	text-decoration: underline;
 }
 
@@ -1020,6 +1046,17 @@
 @media (max-width: 600px) {
 	.ebc-form {
 		font-size: 16px;
+	}
+
+	/* On a phone three labels overflow the row, so only the step you are on
+	   keeps its text; the dots and connectors still show the position, and the
+	   <nav> carries "Step X of Y" for screen readers. */
+	.ebc-progress__item .ebc-progress__label {
+		display: none;
+	}
+
+	.ebc-progress__item.is-current .ebc-progress__label {
+		display: inline;
 	}
 
 	.ebc-thanks__title {
