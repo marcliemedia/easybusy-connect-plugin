@@ -146,7 +146,11 @@ final class ThankYou
                 'ebc_reference' => $reference,
                 'ebc_service_id' => isset($service['serviceId']) ? (int) $service['serviceId'] : null,
                 'ebc_service'  => (string) ($service['name'] ?? ''),
-                'value'        => isset($service['price']) ? (float) $service['price'] : null,
+                // A free consultation is entered in EasyBusy as a token price
+                // because 0 is refused; Ads/GA4 must see 0, not 0.01.
+                'value'        => !empty($service['free'])
+                    ? 0.0
+                    : (isset($service['price']) ? (float) $service['price'] : null),
                 'currency'     => (string) ($service['currency'] ?? ''),
             ],
         ];

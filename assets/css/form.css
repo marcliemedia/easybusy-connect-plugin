@@ -312,6 +312,12 @@
 	white-space: nowrap;
 }
 
+/* "Free of charge" is words, not a number, so it is set slightly smaller to
+   keep the service name the loudest thing on the card. */
+.ebc-card__price.is-free {
+	font-size: 16px;
+}
+
 .ebc-card__meta {
 	color: var(--ebc-text-muted);
 	flex-basis: 100%;

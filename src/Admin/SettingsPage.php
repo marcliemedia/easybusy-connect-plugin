@@ -271,6 +271,8 @@ final class SettingsPage
         Shell::text('ui_locale', __('Form language (WordPress locale)', 'easybusy-connect'), (string) $settings['ui_locale'], __('e.g. hr — the form speaks this language even if the site is en_US.', 'easybusy-connect'));
         Shell::cardClose();
 
+        $this->cardServices($settings);
+
         Shell::cardOpen(__('Consent and confirmation', 'easybusy-connect'), __('Wording shown next to the consent checkbox, and where the patient lands afterwards.', 'easybusy-connect'));
         Shell::textarea('consent_text', __('Consent text', 'easybusy-connect'), (string) $settings['consent_text'], 3);
         Shell::text('consent_url', __('Consent link URL', 'easybusy-connect'), (string) $settings['consent_url']);
@@ -280,6 +282,78 @@ final class SettingsPage
 
         Shell::cardOpen(__('Fluent Forms bridge', 'easybusy-connect'), __('Forward existing form submissions to EasyBusy as leads.', 'easybusy-connect'));
         Shell::text('ff_forms', __('Form ids to forward', 'easybusy-connect'), (string) $settings['ff_forms'], __('Comma separated, e.g. 4. Leave empty to disable.', 'easybusy-connect'));
+        Shell::cardClose();
+    }
+
+    /**
+     * The EasyBusy account is shared with a second clinic, so its catalogue
+     * carries services this website must not offer. The live list is printed
+     * with a checkbox each; unchecked ids go to `hidden_services` and are
+     * dropped both from the form and from the server-side validation, so a
+     * hidden service cannot be booked even by a crafted request.
+     *
+     * @param array<string,mixed> $settings
+     */
+    private function cardServices(array $settings): void
+    {
+        Shell::cardOpen(
+            __('Services shown on this website', 'easybusy-connect'),
+            __('Read live from EasyBusy. Untick anything that belongs to another clinic or should not be bookable online.', 'easybusy-connect')
+        );
+
+        $services = $this->catalog->all($this->capabilities->resolveLanguage());
+        if (is_wp_error($services)) {
+            printf(
+                '<p class="ebc-help">%s</p>',
+                esc_html(sprintf(
+                    /* translators: %s: error message from the API */
+                    __('The service list could not be read from EasyBusy right now (%s). Your current selection is kept.', 'easybusy-connect'),
+                    $services->get_error_message()
+                ))
+            );
+            Shell::cardClose();
+
+            return;
+        }
+
+        $hidden = Settings::hiddenServices();
+        $groups = [];
+        foreach ($services as $service) {
+            $category = $service['category'] !== '' ? $service['category'] : __('Other services', 'easybusy-connect');
+            $groups[$category][] = $service;
+        }
+        ksort($groups);
+
+        echo '<div class="ebc-services">';
+        foreach ($groups as $category => $items) {
+            printf('<h4 class="ebc-services__group">%s</h4><ul class="ebc-services__list">', esc_html((string) $category));
+            foreach ($items as $service) {
+                $id = (int) $service['serviceId'];
+                $price = !empty($service['free'])
+                    ? __('free of charge', 'easybusy-connect')
+                    : trim(sprintf('%s %s', number_format((float) $service['price'], 2, ',', '.'), (string) $service['currency']));
+                printf(
+                    '<li class="ebc-services__item"><label><input type="checkbox" name="visible_services[]" value="%1$d"%2$s>' .
+                    '<span class="ebc-services__name">%3$s</span>' .
+                    '<span class="ebc-services__meta">%4$s · #%1$d</span></label>' .
+                    '<input type="hidden" name="services_listed[]" value="%1$d"></li>',
+                    $id,
+                    in_array($id, $hidden, true) ? '' : ' checked',
+                    esc_html((string) $service['name']),
+                    esc_html($price)
+                );
+            }
+            echo '</ul>';
+        }
+        echo '</div>';
+
+        Shell::text(
+            'free_price_max',
+            __('Show as free up to (price)', 'easybusy-connect'),
+            rtrim(rtrim(number_format((float) $settings['free_price_max'], 2, '.', ''), '0'), '.'),
+            __('EasyBusy refuses a price of 0, so a free consultation is entered as a token amount (e.g. 0.01). At or below this the form prints "Free of charge" instead of the number, and the conversion value sent to Ads/GA4 is 0.', 'easybusy-connect')
+        );
+
         Shell::cardClose();
     }
 
@@ -507,11 +581,27 @@ final class SettingsPage
             'retention_days'       => max(0, min(3650, (int) ($_POST['retention_days'] ?? 90))),
             'delete_data_on_uninstall' => !empty($_POST['delete_data_on_uninstall']),
             'ttl_slots'            => max(15, min(900, (int) ($_POST['ttl_slots'] ?? 60))),
+            'free_price_max'       => max(0.0, min(1000.0, (float) str_replace(',', '.', (string) ($_POST['free_price_max'] ?? '0.01')))),
         ];
 
         $key = trim((string) ($_POST['api_key'] ?? ''));
         if ($key !== '') {
             $values['api_key'] = $key;
+        }
+
+        // The visibility checkboxes only exist on the Booking form tab. When
+        // another tab is saved the list must survive untouched, and ids the API
+        // did not return this time (an outage, or a service the clinic
+        // disabled) stay hidden rather than silently reappearing.
+        if (isset($_POST['services_listed'])) {
+            $listed = array_map('intval', (array) $_POST['services_listed']);
+            $visible = array_map('intval', (array) ($_POST['visible_services'] ?? []));
+            $hidden = array_merge(
+                array_diff($listed, $visible),
+                array_diff(Settings::hiddenServices(), $listed)
+            );
+            sort($hidden);
+            $values['hidden_services'] = implode(',', array_unique($hidden));
         }
 
         Settings::save($values);

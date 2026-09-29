@@ -315,3 +315,21 @@ msgstr "URL stranice za kontakt"
 
 msgid "Offered when the clinic has no free slot at all and no inquiry fallback is available, so the visitor is not walked into a request the API would refuse."
 msgstr "Prikazuje se kada klinika nema nijedan slobodan termin ni mogućnost slanja upita, kako posjetitelja ne bismo vodili u zahtjev koji API odbija."
+
+msgid "Free of charge"
+msgstr "Besplatno"
+
+msgid "free of charge"
+msgstr "besplatno"
+
+msgid "Services shown on this website"
+msgstr "Usluge prikazane na ovoj web stranici"
+
+msgid "Read live from EasyBusy. Untick anything that belongs to another clinic or should not be bookable online."
+msgstr "Učitano uživo iz EasyBusyja. Odznačite sve što pripada drugoj ustanovi ili se ne smije naručivati online."
+
+msgid "Show as free up to (price)"
+msgstr "Prikaži kao besplatno do (cijena)"
+
+msgid "EasyBusy refuses a price of 0, so a free consultation is entered as a token amount (e.g. 0.01). At or below this the form prints \"Free of charge\" instead of the number, and the conversion value sent to Ads/GA4 is 0."
+msgstr "EasyBusy ne dopušta cijenu 0, pa se besplatna konzultacija upisuje kao simbolični iznos (npr. 0,01). Do te vrijednosti obrazac umjesto brojke ispisuje „Besplatno", a vrijednost konverzije poslana u Ads/GA4 je 0."

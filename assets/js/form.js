@@ -49,7 +49,15 @@
 		return node;
 	}
 
-	function money(price, currency) {
+	/**
+	 * EasyBusy refuses a price of 0, so a free consultation arrives as a token
+	 * amount and the server marks it `free`. Printing "0.01 EUR" reads as a
+	 * pricing mistake, so those services say so in words instead.
+	 */
+	function money(price, currency, free) {
+		if (free) {
+			return text('free', 'Free of charge');
+		}
 		if (price === null || price === undefined) {
 			return '';
 		}
@@ -662,7 +670,7 @@
 
 		var groups = (this.state.groups || []).map(function (group) {
 			var cards = group.services.map(function (service) {
-				var price = money(service.price, service.currency);
+				var price = money(service.price, service.currency, service.free);
 				return el('button', {
 					type: 'button',
 					class: 'ebc-card' + (service.serviceId === chosen ? ' is-selected' : ''),
@@ -672,7 +680,7 @@
 					}
 				}, [
 					el('span', { class: 'ebc-card__name', text: service.name }),
-					price ? el('span', { class: 'ebc-card__price', text: price }) : null
+					price ? el('span', { class: 'ebc-card__price' + (service.free ? ' is-free' : ''), text: price }) : null
 				]);
 			});
 
@@ -1388,8 +1396,9 @@
 		var rows = [];
 
 		if (summary.service) {
+			var servicePrice = money(summary.service.price, summary.service.currency, summary.service.free);
 			rows.push(el('dt', { text: text('service', 'Service') }));
-			rows.push(el('dd', { text: summary.service.name + (money(summary.service.price, summary.service.currency) ? ' · ' + money(summary.service.price, summary.service.currency) : '') }));
+			rows.push(el('dd', { text: summary.service.name + (servicePrice ? ' · ' + servicePrice : '') }));
 		}
 		if (summary.slot) {
 			rows.push(el('dt', { text: text('appointment', 'Appointment') }));

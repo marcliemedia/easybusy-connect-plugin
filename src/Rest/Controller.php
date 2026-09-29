@@ -156,6 +156,7 @@ final class Controller
                 'serviceId' => $service['serviceId'],
                 'name'      => $service['name'],
                 'price'     => $service['price'],
+                'free'      => !empty($service['free']),
                 'currency'  => $service['currency'],
                 'doctors'   => $service['doctors'],
             ];
@@ -187,6 +188,17 @@ final class Controller
                 $doctors,
                 static fn (array $doctor): bool => in_array($serviceId, $doctor['services'], true)
             ));
+        } else {
+            // Without a service the whole roster would show, including the
+            // specialists of the second clinic whose services are hidden here.
+            $visible = $this->catalog->services($language);
+            if (!is_wp_error($visible)) {
+                $ids = array_column($visible, 'serviceId');
+                $doctors = array_values(array_filter(
+                    $doctors,
+                    static fn (array $doctor): bool => array_intersect($doctor['services'], $ids) !== []
+                ));
+            }
         }
 
         return $this->respond(['language' => $language, 'doctors' => $doctors]);
@@ -440,6 +452,7 @@ final class Controller
                 'serviceId' => $service['serviceId'],
                 'name'      => $service['name'],
                 'price'     => $service['price'],
+                'free'      => !empty($service['free']),
                 'currency'  => $service['currency'],
             ] : null,
             'doctorId' => $draft->doctorId(),

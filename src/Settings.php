@@ -20,6 +20,14 @@ final class Settings
         'dry_run'         => true,     // no write ever leaves the site while true
         'slot_horizon'    => 60,       // days searched forward
         'language_map'    => [],       // wp locale => easybusy code
+        // Service ids the clinic does not want on this website. The EasyBusy
+        // account is shared with a second clinic, so its catalogue carries
+        // services that belong elsewhere.
+        'hidden_services' => '',
+        // EasyBusy refuses a price of 0, so a free service is entered as a
+        // token amount. At or below this the form prints "free of charge"
+        // instead of the number.
+        'free_price_max'  => 0.01,
         'consent_text'    => '',
         'consent_url'     => '',
         // Where a visitor is sent when no appointment can be offered (no free
@@ -106,6 +114,25 @@ final class Settings
         $url = trim((string) self::get('contact_url', ''));
 
         return $url === '' ? '' : esc_url_raw($url);
+    }
+
+    /**
+     * Service ids hidden from the booking form.
+     *
+     * @return array<int,int>
+     */
+    public static function hiddenServices(): array
+    {
+        $raw = (string) self::get('hidden_services', '');
+        $ids = array_map('intval', preg_split('/[^0-9]+/', $raw, -1, PREG_SPLIT_NO_EMPTY) ?: []);
+
+        return array_values(array_unique(array_filter($ids, static fn (int $id): bool => $id > 0)));
+    }
+
+    /** Highest price still shown as "free of charge". */
+    public static function freePriceMax(): float
+    {
+        return max(0.0, (float) self::get('free_price_max', 0.01));
     }
 
     public static function get(string $key, mixed $fallback = null): mixed

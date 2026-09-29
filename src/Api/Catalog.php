@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EasyBusyConnect\Api;
 
+use EasyBusyConnect\Settings;
 use EasyBusyConnect\Support\Log;
 use EasyBusyConnect\Support\Text;
 
@@ -38,21 +39,57 @@ final class Catalog
     }
 
     /**
+     * The catalogue the website offers: every bookable service the key returns,
+     * minus the ones the clinic hid in Settings → Booking form. The EasyBusy
+     * account is shared with a second clinic, so its services arrive here too
+     * and must not appear on this site.
+     *
      * @return array<int,array<string,mixed>>|\WP_Error
      */
     public function services(string $language): array|\WP_Error
     {
-        return $this->live('services', $language, '/simple-booking/bookable-services', static function (array $rows): array {
+        $services = $this->all($language);
+        if (is_wp_error($services)) {
+            return $services;
+        }
+
+        $hidden = Settings::hiddenServices();
+        if ($hidden === []) {
+            return $services;
+        }
+
+        return array_values(array_filter(
+            $services,
+            static fn (array $service): bool => !in_array($service['serviceId'], $hidden, true)
+        ));
+    }
+
+    /**
+     * Everything the key returns, hidden ones included — the admin screen needs
+     * the full list to offer the checkboxes.
+     *
+     * @return array<int,array<string,mixed>>|\WP_Error
+     */
+    public function all(string $language): array|\WP_Error
+    {
+        $freeMax = Settings::freePriceMax();
+
+        return $this->live('services', $language, '/simple-booking/bookable-services', static function (array $rows) use ($freeMax): array {
             $services = [];
             foreach ($rows as $row) {
                 if (!is_array($row) || !isset($row['serviceId'])) {
                     continue;
                 }
+                $price = isset($row['price']) ? (float) $row['price'] : null;
                 $services[] = [
                     'serviceId' => (int) $row['serviceId'],
                     'category'  => isset($row['category']) && $row['category'] !== null ? Text::label((string) $row['category']) : '',
                     'name'      => Text::label((string) ($row['name'] ?? '')),
-                    'price'     => isset($row['price']) ? (float) $row['price'] : null,
+                    'price'     => $price,
+                    // EasyBusy cannot store 0, so a free consultation is entered
+                    // as a token amount (0.01 €). Showing that number reads as a
+                    // mistake; the form prints "free of charge" instead.
+                    'free'      => $price !== null && $price <= $freeMax,
                     'currency'  => Text::clean((string) ($row['currency'] ?? '')),
                     'doctors'   => self::doctorList($row['doctors'] ?? []),
                 ];

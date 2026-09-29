@@ -1054,3 +1054,48 @@ select.ebc-input:hover {
 		padding: 12px;
 	}
 }
+
+/* ---------- service visibility (Booking form tab) ---------- */
+
+.ebc-services {
+	display: grid;
+	gap: 14px;
+	margin-bottom: 18px;
+}
+
+.ebc-services__group {
+	color: var(--ebc-muted);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	margin: 0;
+	text-transform: uppercase;
+}
+
+.ebc-services__list {
+	display: grid;
+	gap: 6px;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ebc-services__item label {
+	align-items: baseline;
+	cursor: pointer;
+	display: flex;
+	gap: 8px;
+	line-height: 1.4;
+}
+
+.ebc-services__name {
+	font-weight: 600;
+}
+
+.ebc-services__meta {
+	color: var(--ebc-muted);
+	font-size: 12px;
+	margin-left: auto;
+	white-space: nowrap;
+}

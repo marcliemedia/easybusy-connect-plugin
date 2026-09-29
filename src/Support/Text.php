@@ -28,6 +28,12 @@ final class Text
         'mr', 'mr.', 'spec', 'spec.', 'med', 'med.', 'dent', 'dent.',
     ];
 
+    /** Croatian function words: lower-case unless they open the label. */
+    private const SMALL_WORDS = [
+        'i', 'ili', 'te', 'u', 'na', 'za', 's', 'sa', 'od', 'do', 'iz', 'o',
+        'po', 'uz', 'pri', 'bez', 'nad', 'pod', 'pa',
+    ];
+
     /** Collapses line breaks, double spaces and NBSP; trims the edges. */
     public static function clean(string $value): string
     {
@@ -70,6 +76,14 @@ final class Text
                 // "DR." introduces a person, so the rest is a name, not prose.
                 $out[] = $lower;
                 $name = true;
+                $first = false;
+                continue;
+            }
+
+            if (in_array($lower, self::SMALL_WORDS, true) && !$first) {
+                // "I" between two service words is the conjunction, not an
+                // initial, and a name never starts with one either.
+                $out[] = $lower;
                 $first = false;
                 continue;
             }
@@ -120,22 +134,34 @@ final class Text
         return self::isShouted($value) ? self::lower($value) : $value;
     }
 
-    /** True when the string carries no lower-case letter of its own. */
+    /**
+     * True when the label was typed in caps. One stray lower-case letter does
+     * not disqualify it — "ANALIZA KOŽE OBSERVE 520x" is shouting with a unit
+     * suffix, not mixed case the clinic chose.
+     */
     private static function isShouted(string $value): bool
     {
-        return preg_match('/\p{L}/u', $value) === 1
-            && preg_match('/\p{Ll}/u', $value) !== 1;
+        preg_match_all('/\p{Lu}/u', $value, $upper);
+        preg_match_all('/\p{Ll}/u', $value, $lower);
+
+        return count($upper[0]) >= 2 && count($lower[0]) <= 1;
     }
 
-    /** Short tokens and known abbreviations keep the case they arrived in. */
+    /**
+     * Known abbreviations, anything carrying a digit, and one/two-letter tokens
+     * (ZO, CT) keep the case they arrived in. Three-letter words must not be
+     * assumed to be acronyms — "RED" and "PRO" are ordinary words.
+     */
     private static function isAcronym(string $word): bool
     {
         $bare = trim($word, ".,:;()[]-");
+        if ($bare === '' || in_array(self::lower($bare), self::TITLES, true)) {
+            return false;
+        }
 
-        return $bare !== ''
-            && (in_array(self::upper($bare), self::ACRONYMS, true)
-                || preg_match('/\d/u', $bare) === 1
-                || (self::length($bare) <= 3 && !in_array(self::lower($bare), self::TITLES, true)));
+        return in_array(self::upper($bare), self::ACRONYMS, true)
+            || preg_match('/\d/u', $bare) === 1
+            || (self::length($bare) <= 2 && !in_array(self::lower($bare), self::SMALL_WORDS, true));
     }
 
     /** Hyphens and slashes typed without spaces read as one long word. */
