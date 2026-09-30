@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EasyBusyConnect\Api;
 
+use EasyBusyConnect\Settings;
 use EasyBusyConnect\Support\Log;
 use EasyBusyConnect\Support\RateLimit;
 
@@ -25,13 +26,24 @@ final class Leads
     }
 
     /**
+     * The Leads group has its own key (see Settings::leadApiKey); the booking
+     * key is denied on /lead, so every call here is signed separately.
+     */
+    private function client(): Client
+    {
+        $key = Settings::leadApiKey();
+
+        return $key !== '' ? $this->client->withKey($key) : $this->client;
+    }
+
+    /**
      * @param array<string,string> $contact
      * @return array<string,mixed>|\WP_Error
      */
     public function create(array $contact, string $message, array $attribution = []): array|\WP_Error
     {
         $payload = $this->payload($contact, $message, $attribution);
-        $response = $this->client->post('/lead', $payload);
+        $response = $this->client()->post('/lead', $payload);
         if (is_wp_error($response)) {
             Log::add('error', 'lead failed', ['code' => $response->get_error_code()]);
             if ($response->get_error_code() === 'ebc_forbidden') {
@@ -70,7 +82,7 @@ final class Leads
             . (string) file_get_contents($path) . "\r\n"
             . "--{$boundary}--\r\n";
 
-        $response = $this->client->raw(
+        $response = $this->client()->raw(
             'POST',
             sprintf('/lead/%d/upload', $leadId),
             $body,

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       EasyBusy Connect (by Marclie)
  * Description:       Multi-step appointment booking and lead capture synced to the EasyBusy clinic system over its B2B REST API. Built by Marclie; not affiliated with or endorsed by EasyBusy.
- * Version:           0.13.1
+ * Version:           0.14.1
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Marclie
@@ -20,7 +20,7 @@ if (!defined('ABSPATH') && !defined('EBC_HARNESS')) {
     exit;
 }
 
-define('EBC_VERSION', '0.13.1');
+define('EBC_VERSION', '0.14.1');
 define('EBC_FILE', __FILE__);
 define('EBC_DIR', __DIR__);
 

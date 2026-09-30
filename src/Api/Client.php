@@ -24,13 +24,34 @@ final class Client
     private const RETRIES = 1;
 
     /**
+     * EasyBusy issues one key per endpoint group, not one key per clinic: the
+     * booking key is denied on /lead and the leads key is denied on everything
+     * else. A call therefore states which key it needs instead of assuming the
+     * default one.
+     */
+    private ?string $key = null;
+
+    public function withKey(string $key): self
+    {
+        $clone = clone $this;
+        $clone->key = trim($key) !== '' ? trim($key) : null;
+
+        return $clone;
+    }
+
+    private function key(): string
+    {
+        return $this->key ?? Settings::apiKey();
+    }
+
+    /**
      * @param array<string,scalar|null> $query
      * @param array<string,mixed>|null  $body
      * @return array{status:int,data:mixed,error_type:string|null}|\WP_Error
      */
     public function request(string $method, string $path, array $query = [], ?array $body = null, bool $requireKey = true): array|\WP_Error
     {
-        $key = Settings::apiKey();
+        $key = $this->key();
         if ($requireKey && $key === '') {
             return new \WP_Error('ebc_no_key', __('No EasyBusy API key is configured.', 'easybusy-connect'));
         }
@@ -148,7 +169,7 @@ final class Client
      */
     public function raw(string $method, string $path, string $body, string $contentType): mixed
     {
-        $key = Settings::apiKey();
+        $key = $this->key();
         if ($key === '') {
             return new \WP_Error('ebc_no_key', __('No EasyBusy API key is configured.', 'easybusy-connect'));
         }
@@ -190,7 +211,7 @@ final class Client
      */
     public function probeRawStatus(string $method, string $path, string $body, string $contentType): int|\WP_Error
     {
-        $key = Settings::apiKey();
+        $key = $this->key();
         if ($key === '') {
             return new \WP_Error('ebc_no_key', __('No EasyBusy API key is configured.', 'easybusy-connect'));
         }

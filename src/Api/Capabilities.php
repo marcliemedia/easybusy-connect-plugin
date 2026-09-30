@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EasyBusyConnect\Api;
 
+use EasyBusyConnect\Settings;
 use EasyBusyConnect\Support\Log;
 
 /**
@@ -109,25 +110,33 @@ final class Capabilities
 
         // The only honest test of the Leads group is a write to it, so the
         // probe writes to a lead that cannot exist: id 0 never resolves, so a
-        // granted key answers 400/404 without creating anything, while a denied
-        // key is stopped by the access filter with 403. GET /lead answers 405
-        // for both and must not be used (it reported this denied key as granted
-        // until 2026-09-28). A live 403 on a real call still demotes the group
-        // through deny().
-        $boundary = 'ebc' . bin2hex(random_bytes(12));
-        $probeBody = "--{$boundary}\r\n"
-            . 'Content-Disposition: form-data; name="file"; filename="probe.txt"' . "\r\n"
-            . "Content-Type: text/plain\r\n\r\n"
-            . "ebc-capability-probe\r\n"
-            . "--{$boundary}--\r\n";
-        $leadStatus = $this->client->probeRawStatus(
-            'POST',
-            '/lead/0/upload',
-            $probeBody,
-            'multipart/form-data; boundary=' . $boundary
-        );
-        $map['probes']['POST /lead/{id}/upload'] = is_wp_error($leadStatus) ? $leadStatus->get_error_code() : $leadStatus;
-        $map['groups']['leads'] = is_int($leadStatus) && $leadStatus !== 403 && $leadStatus !== 401;
+        // granted key answers 200/400/404 without creating anything, while a
+        // denied key is stopped by the access filter with 403. GET /lead answers
+        // 405 for both and must not be used (it reported a denied key as granted
+        // until 2026-09-28). The group has its own key — the booking key is
+        // denied on /lead — so the probe is signed with that one; without it
+        // there is no lead channel at all. A live 403 on a real call still
+        // demotes the group through deny().
+        $leadKey = Settings::leadApiKey();
+        if ($leadKey === '') {
+            $map['probes']['POST /lead/{id}/upload'] = 'no lead key';
+            $map['groups']['leads'] = false;
+        } else {
+            $boundary = 'ebc' . bin2hex(random_bytes(12));
+            $probeBody = "--{$boundary}\r\n"
+                . 'Content-Disposition: form-data; name="file"; filename="probe.txt"' . "\r\n"
+                . "Content-Type: text/plain\r\n\r\n"
+                . "ebc-capability-probe\r\n"
+                . "--{$boundary}--\r\n";
+            $leadStatus = $this->client->withKey($leadKey)->probeRawStatus(
+                'POST',
+                '/lead/0/upload',
+                $probeBody,
+                'multipart/form-data; boundary=' . $boundary
+            );
+            $map['probes']['POST /lead/{id}/upload'] = is_wp_error($leadStatus) ? $leadStatus->get_error_code() : $leadStatus;
+            $map['groups']['leads'] = is_int($leadStatus) && $leadStatus !== 403 && $leadStatus !== 401;
+        }
 
         $priceList = $this->client->get('/price-list');
         $map['probes']['GET /price-list'] = $this->describe($priceList);

@@ -16,6 +16,9 @@ final class Settings
     private const DEFAULTS = [
         'api_base'        => 'https://api-b2b.easybusy.software',
         'api_key'         => '',
+        // EasyBusy issues a separate key for the Leads group; it is denied on
+        // every other endpoint, so it cannot replace the booking key.
+        'lead_api_key'    => '',
         'mode'            => 'auto',   // auto | booking | lead
         'dry_run'         => true,     // no write ever leaves the site while true
         'slot_horizon'    => 60,       // days searched forward
@@ -171,6 +174,33 @@ final class Settings
             return 'wp-config';
         }
         if (trim((string) self::get('api_key')) !== '') {
+            return 'option';
+        }
+
+        return 'missing';
+    }
+
+    /**
+     * Key for the Leads group. EasyBusy issues it separately and denies it on
+     * every other endpoint, so there is no falling back to the booking key —
+     * an empty value means the site simply has no lead channel.
+     */
+    public static function leadApiKey(): string
+    {
+        if (defined('EASYBUSY_LEAD_API_KEY')) {
+            return trim((string) constant('EASYBUSY_LEAD_API_KEY'));
+        }
+
+        return trim((string) self::get('lead_api_key'));
+    }
+
+    /** Where the leads key came from, for the admin screen. */
+    public static function leadApiKeySource(): string
+    {
+        if (defined('EASYBUSY_LEAD_API_KEY') && trim((string) constant('EASYBUSY_LEAD_API_KEY')) !== '') {
+            return 'wp-config';
+        }
+        if (trim((string) self::get('lead_api_key')) !== '') {
             return 'option';
         }
 

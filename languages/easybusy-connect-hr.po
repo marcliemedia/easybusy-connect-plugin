@@ -333,3 +333,21 @@ msgstr "Prikaži kao besplatno do (cijena)"
 
 msgid "EasyBusy refuses a price of 0, so a free consultation is entered as a token amount (e.g. 0.01). At or below this the form prints \"Free of charge\" instead of the number, and the conversion value sent to Ads/GA4 is 0."
 msgstr "EasyBusy ne dopušta cijenu 0, pa se besplatna konzultacija upisuje kao simbolični iznos (npr. 0,01). Do te vrijednosti obrazac umjesto brojke ispisuje „Besplatno", a vrijednost konverzije poslana u Ads/GA4 je 0."
+
+msgid "Booking API key"
+msgstr "API ključ za naručivanje"
+
+msgid "Leads API key"
+msgstr "API ključ za upite (leads)"
+
+msgid "EasyBusy issues a second key for the Leads group. It is denied on every other endpoint, so it is stored separately — without it there is no inquiry channel and no X-ray upload."
+msgstr "EasyBusy izdaje zaseban ključ za grupu Leads. Na svim ostalim rutama je odbijen pa se čuva odvojeno — bez njega nema slanja upita ni privitka RTG snimke."
+
+msgid "New leads API key"
+msgstr "Novi API ključ za upite"
+
+msgid "Paste the key EasyBusy issued for the Leads group. Leave empty to keep the current one."
+msgstr "Zalijepite ključ koji je EasyBusy izdao za grupu Leads. Ostavite prazno da zadržite postojeći."
+
+msgid "A leads key is defined in code (wp-config.php or an mu-plugin). That definition always wins — remove EASYBUSY_LEAD_API_KEY there before a key entered here can take effect."
+msgstr "Ključ za upite definiran je u kodu (wp-config.php ili mu-plugin). Ta definicija uvijek ima prednost — uklonite EASYBUSY_LEAD_API_KEY prije nego što ključ unesen ovdje može djelovati."

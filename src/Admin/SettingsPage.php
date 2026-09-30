@@ -197,9 +197,9 @@ final class SettingsPage
         $this->actionButton('ebc_probe', __('Re-probe capabilities', 'easybusy-connect'));
         Shell::cardClose();
 
-        Shell::cardOpen(__('API key', 'easybusy-connect'), __('Swap the EasyBusy key here when the vendor issues a new one.', 'easybusy-connect'));
-        Shell::stat(__('Currently used key', 'easybusy-connect'), $this->maskedKey());
-        Shell::stat(__('Loaded from', 'easybusy-connect'), $this->keySourceLabel());
+        Shell::cardOpen(__('Booking API key', 'easybusy-connect'), __('Swap the EasyBusy key here when the vendor issues a new one.', 'easybusy-connect'));
+        Shell::stat(__('Currently used key', 'easybusy-connect'), $this->maskedKey(Settings::apiKey()));
+        Shell::stat(__('Loaded from', 'easybusy-connect'), $this->keySourceLabel(Settings::apiKeySource()));
 
         if (Settings::apiKeySource() === 'wp-config') {
             printf(
@@ -218,6 +218,29 @@ final class SettingsPage
         $this->actionButton('ebc_probe', __('Test this key now', 'easybusy-connect'));
         Shell::cardClose();
 
+        Shell::cardOpen(
+            __('Leads API key', 'easybusy-connect'),
+            __('EasyBusy issues a second key for the Leads group. It is denied on every other endpoint, so it is stored separately — without it there is no inquiry channel and no X-ray upload.', 'easybusy-connect')
+        );
+        Shell::stat(__('Currently used key', 'easybusy-connect'), $this->maskedKey(Settings::leadApiKey()));
+        Shell::stat(__('Loaded from', 'easybusy-connect'), $this->keySourceLabel(Settings::leadApiKeySource()));
+
+        if (Settings::leadApiKeySource() === 'wp-config') {
+            printf(
+                '<p class="ebc-help ebc-help--warn">%s</p>',
+                esc_html__('A leads key is defined in code (wp-config.php or an mu-plugin). That definition always wins — remove EASYBUSY_LEAD_API_KEY there before a key entered here can take effect.', 'easybusy-connect')
+            );
+        }
+
+        Shell::text(
+            'lead_api_key',
+            __('New leads API key', 'easybusy-connect'),
+            '',
+            __('Paste the key EasyBusy issued for the Leads group. Leave empty to keep the current one.', 'easybusy-connect'),
+            'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
+        );
+        Shell::cardClose();
+
         Shell::cardOpen(__('Write mode', 'easybusy-connect'), __('Dry run assembles and validates submissions without sending anything to EasyBusy.', 'easybusy-connect'));
         Shell::toggle('dry_run', __('Dry run (test mode)', 'easybusy-connect'), (bool) $settings['dry_run'], __('Entries are still recorded locally, and no e-mail is sent.', 'easybusy-connect'));
         Shell::select('mode', __('Submission mode', 'easybusy-connect'), [
@@ -228,10 +251,9 @@ final class SettingsPage
         Shell::cardClose();
     }
 
-    /** Never prints the key: first and last four characters only. */
-    private function maskedKey(): string
+    /** Never prints a key: first and last four characters only. */
+    private function maskedKey(string $key): string
     {
-        $key = Settings::apiKey();
         if ($key === '') {
             return __('not configured', 'easybusy-connect');
         }
@@ -242,9 +264,9 @@ final class SettingsPage
         return substr($key, 0, 4) . str_repeat('•', 8) . substr($key, -4);
     }
 
-    private function keySourceLabel(): string
+    private function keySourceLabel(string $source): string
     {
-        return match (Settings::apiKeySource()) {
+        return match ($source) {
             'wp-config' => __('code constant (wp-config.php / mu-plugin)', 'easybusy-connect'),
             'option'    => __('this settings screen (database)', 'easybusy-connect'),
             default     => __('nowhere — the integration is inactive', 'easybusy-connect'),
@@ -587,6 +609,11 @@ final class SettingsPage
         $key = trim((string) ($_POST['api_key'] ?? ''));
         if ($key !== '') {
             $values['api_key'] = $key;
+        }
+
+        $leadKey = trim((string) ($_POST['lead_api_key'] ?? ''));
+        if ($leadKey !== '') {
+            $values['lead_api_key'] = $leadKey;
         }
 
         // The visibility checkboxes only exist on the Booking form tab. When

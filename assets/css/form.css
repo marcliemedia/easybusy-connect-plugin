@@ -695,6 +695,14 @@
 	gap: 8px;
 }
 
+/* The theme paints a bare <label> grey (#9e9e9e = 2.37:1 on white) and the
+   consent wording inherited it — the one sentence on the form that has to be
+   readable for the consent to be worth anything. */
+.ebc-form .ebc-consent,
+.ebc-form .ebc-consent span {
+	color: var(--ebc-text);
+}
+
 .ebc-file-input {
 	padding: 10px 12px;
 }
