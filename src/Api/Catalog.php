@@ -68,9 +68,30 @@ final class Catalog
      * Everything the key returns, hidden ones included — the admin screen needs
      * the full list to offer the checkboxes.
      *
+     * A language the clinic has enabled but not filled in answers **200 with an
+     * empty list**, which looks exactly like "no bookable services" and leaves
+     * step 1 blank. So an empty answer in a non-default language is retried in
+     * the clinic's default language before it is believed.
+     *
      * @return array<int,array<string,mixed>>|\WP_Error
      */
     public function all(string $language): array|\WP_Error
+    {
+        $services = $this->fetch($language);
+        $fallback = $this->capabilities->defaultLanguage();
+        if (!is_wp_error($services) && $services === [] && $fallback !== '' && $fallback !== $language) {
+            Log::add('warning', 'empty catalogue, retrying in the clinic default language', [
+                'language' => $language, 'fallback' => $fallback,
+            ]);
+
+            return $this->fetch($fallback);
+        }
+
+        return $services;
+    }
+
+    /** @return array<int,array<string,mixed>>|\WP_Error */
+    private function fetch(string $language): array|\WP_Error
     {
         $freeMax = Settings::freePriceMax();
 
@@ -111,6 +132,18 @@ final class Catalog
             return [];
         }
 
+        $doctors = $this->fetchDoctors($language);
+        $fallback = $this->capabilities->defaultLanguage();
+        if (!is_wp_error($doctors) && $doctors === [] && $fallback !== '' && $fallback !== $language) {
+            return $this->fetchDoctors($fallback);
+        }
+
+        return $doctors;
+    }
+
+    /** @return array<int,array<string,mixed>>|\WP_Error */
+    private function fetchDoctors(string $language): array|\WP_Error
+    {
         return $this->live('doctors', $language, '/simple-booking/bookable-doctors', static function (array $rows): array {
             $doctors = [];
             foreach ($rows as $row) {

@@ -224,6 +224,12 @@ final class Capabilities
      * An unsupported languageCode does NOT error: the vendor answers 200 with an
      * empty data array (verified with languageCode=de), which is indistinguishable
      * from "the clinic has no services". So the code is whitelisted here first.
+     *
+     * The catalogue must follow the language the **form** speaks, not the
+     * WordPress admin locale. This site runs `en_US` with the form set to `hr`;
+     * once the clinic added English to its EasyBusy account, `en` became a
+     * valid code and step 1 went empty, because only the Croatian catalogue is
+     * filled in. `ui_locale` is therefore asked before the site locale.
      */
     public function resolveLanguage(?string $requested = null): string
     {
@@ -242,6 +248,12 @@ final class Capabilities
         if (isset($map[$locale])) {
             $candidates[] = strtolower((string) $map[$locale]);
         }
+
+        $ui = (string) \EasyBusyConnect\Settings::get('ui_locale', '');
+        if ($ui !== '') {
+            $candidates[] = strtolower(substr($ui, 0, 2));
+        }
+
         $candidates[] = strtolower(substr((string) $locale, 0, 2));
 
         foreach ($candidates as $candidate) {
